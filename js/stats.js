@@ -63,7 +63,7 @@ var bodyweight = {
         tier: 0,
         tiers: [
             {
-                name: "Incline Pushups", 
+                name: "Incline Pushups",
                 multiplier: 2,
                 upgrade: 100,
             },
