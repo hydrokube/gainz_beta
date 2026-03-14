@@ -1,0 +1,8 @@
+node_modules/
+test-results/
+sim-results/
+
+AGENTS.MD
+PHASE0_PLAN.md
+ECONOMY_ACCELERATION_BUDGET.md
+TASKS.md
