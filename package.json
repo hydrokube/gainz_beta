@@ -1,0 +1,30 @@
+{
+  "name": "gainz_v2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test tests/smoke.spec.ts",
+    "profile:long-sim": "node scripts/long-sim-profile.cjs",
+    "profile:economy": "node scripts/economy-projection.cjs",
+    "profile:content": "node scripts/content-completion-sim.cjs",
+    "profile:lifting-scenarios": "node scripts/lifting-academy-scenarios.cjs",
+    "profile:yoga-scenarios": "node scripts/yoga-flow-scenarios.cjs",
+    "profile:meta-softcap": "node scripts/meta-softcap-stress.cjs",
+    "profile:golden": "node scripts/golden-checkpoints.cjs",
+    "profile:golden:update": "node scripts/golden-checkpoints.cjs --update",
+    "lint": "node -e \"console.log('Base lint script configured (FND-001).')\"",
+    "format": "node -e \"console.log('Base format script configured (FND-001).')\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  },
+  "dependencies": {
+    "break_infinity.js": "^2.2.0"
+  }
+}

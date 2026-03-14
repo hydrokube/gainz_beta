@@ -43,6 +43,14 @@ var stats = {
     totalLiftingPrestige: 0,
     totalYogaPrestige: 0,
     totalCardioPrestige: 0,
+    repeatingUpgrades: {},
+    runTracker: {
+        runSeconds: 0,
+        moneyEarned: 0,
+        followersEarned: 0,
+        researchEarned: 0,
+        influenceEarned: 0,
+    },
     saveTime: 0,
     gameVersion: .53,
 };
@@ -710,6 +718,59 @@ var lifting = {
             mod: .025,
             hidden: false,
         },
+        academy: {
+            credits: 0,
+            totalCreditsEarned: 0,
+            seasonsCompleted: 0,
+            phase: 0,
+            progress: 0,
+            phaseTarget: 120,
+            progressBoost: 1,
+            autoCampConfigured: false,
+            unlockGrantApplied: false,
+            repeatables: {
+                campPointBoostLevel: 0,
+            },
+            camp: {
+                totalPoints: 10,
+                unspentPoints: 10,
+                strength: 0,
+                technique: 0,
+                recovery: 0,
+                promotion: 0,
+                autoNextTrackIndex: 0,
+            },
+            upgrades: [
+                {
+                    id: 0,
+                    isPurchased: false,
+                    name: "Programming Board",
+                    desc: "+30% season progress gain.",
+                    cost: 20,
+                },
+                {
+                    id: 1,
+                    isPurchased: false,
+                    name: "Recovery Staff",
+                    desc: "+18% lifting action speed while in lifting gym.",
+                    cost: 35,
+                },
+                {
+                    id: 2,
+                    isPurchased: false,
+                    name: "Meet Analysts",
+                    desc: "+25% academy credit rewards from completed meets.",
+                    cost: 55,
+                },
+                {
+                    id: 3,
+                    isPurchased: false,
+                    name: "Sponsor Liaison",
+                    desc: "Converts your total stats into extra academy season progress.",
+                    cost: 85,
+                },
+            ],
+        },
     }
 };
 
@@ -1314,6 +1375,450 @@ var research = {
     ],
 };
 
+var yoga = {
+    sun: {
+        id: 12,
+        name: "Sun Salutations",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 1,
+        strength: .02,
+        endurance: .06,
+        agility: .04,
+        tier: 0,
+        tiers: [
+            {
+                name: "Morning Stretch",
+                multiplier: 2,
+                upgrade: 100,
+            },
+            {
+                name: "Sun Salutations",
+                multiplier: 2,
+                upgrade: 1000,
+            },
+            {
+                name: "Solar Flow",
+                multiplier: 2,
+                upgrade: 10000,
+            },
+            {
+                name: "Power Vinyasa",
+                multiplier: 2,
+                upgrade: 100000,
+            },
+            {
+                name: "Radiant Sequence",
+                multiplier: 2,
+                upgrade: 100000,
+            }
+        ],
+    },
+    vinyasa: {
+        id: 13,
+        name: "Vinyasa Flow",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 2,
+        strength: .03,
+        endurance: .07,
+        agility: .03,
+        tier: 0,
+        tiers: [
+            {
+                name: "Flow Drills",
+                multiplier: 2,
+                upgrade: 100,
+            },
+            {
+                name: "Vinyasa Flow",
+                multiplier: 2,
+                upgrade: 1000,
+            },
+            {
+                name: "Hot Flow",
+                multiplier: 2,
+                upgrade: 10000,
+            },
+            {
+                name: "Precision Flow",
+                multiplier: 2,
+                upgrade: 100000,
+            },
+            {
+                name: "Master Sequence",
+                multiplier: 2,
+                upgrade: 100000,
+            }
+        ],
+    },
+    balance: {
+        id: 14,
+        name: "Balance Poses",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 2,
+        strength: .05,
+        endurance: .03,
+        agility: .08,
+        tier: 0,
+        tiers: [
+            {
+                name: "Single-Leg Holds",
+                multiplier: 2,
+                upgrade: 100,
+            },
+            {
+                name: "Tree Pose",
+                multiplier: 2,
+                upgrade: 1000,
+            },
+            {
+                name: "Warrior Balance",
+                multiplier: 2,
+                upgrade: 10000,
+            },
+            {
+                name: "Half Moon",
+                multiplier: 2,
+                upgrade: 100000,
+            },
+            {
+                name: "Dancer Pose",
+                multiplier: 2,
+                upgrade: 100000,
+            }
+        ],
+    },
+    mobility: {
+        id: 15,
+        name: "Mobility Holds",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 3,
+        strength: .03,
+        endurance: .09,
+        agility: .05,
+        tier: 0,
+        tiers: [
+            {
+                name: "Hip Openers",
+                multiplier: 2,
+                upgrade: 100,
+            },
+            {
+                name: "Mobility Holds",
+                multiplier: 2,
+                upgrade: 1000,
+            },
+            {
+                name: "Deep Stretch",
+                multiplier: 2,
+                upgrade: 10000,
+            },
+            {
+                name: "Elastic Chain",
+                multiplier: 2,
+                upgrade: 100000,
+            },
+            {
+                name: "Range Mastery",
+                multiplier: 2,
+                upgrade: 100000,
+            }
+        ],
+    },
+    core: {
+        id: 16,
+        name: "Core Locks",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 4,
+        strength: .10,
+        endurance: .05,
+        agility: .03,
+        tier: 0,
+        tiers: [
+            {
+                name: "Hollow Body",
+                multiplier: 2,
+                upgrade: 100,
+            },
+            {
+                name: "Boat Pose",
+                multiplier: 2,
+                upgrade: 1000,
+            },
+            {
+                name: "Crow Prep",
+                multiplier: 2,
+                upgrade: 10000,
+            },
+            {
+                name: "Arm Balance",
+                multiplier: 2,
+                upgrade: 100000,
+            },
+            {
+                name: "Core Control",
+                multiplier: 2,
+                upgrade: 100000,
+            }
+        ],
+    },
+    breath: {
+        id: 17,
+        name: "Breath Work",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 1,
+        strength: .01,
+        endurance: .04,
+        agility: .1,
+        tier: 0,
+        tiers: [
+            {
+                name: "Box Breathing",
+                multiplier: 2,
+                upgrade: 100,
+            },
+            {
+                name: "Cadence Breathing",
+                multiplier: 2,
+                upgrade: 1000,
+            },
+            {
+                name: "Pranayama",
+                multiplier: 2,
+                upgrade: 10000,
+            },
+            {
+                name: "Extended Retention",
+                multiplier: 2,
+                upgrade: 100000,
+            },
+            {
+                name: "Stillness Mastery",
+                multiplier: 2,
+                upgrade: 100000,
+            }
+        ],
+    },
+    flow: {
+        points: 0,
+        draftOptions: [],
+        activeDraftIndex: -1,
+        routeProgress: 0,
+        routeStability: 0.72,
+        routePressure: 0,
+        routeSteadyActions: 0,
+        routeDrift: 0,
+        currentRouteName: "",
+        currentRouteRisk: "steady",
+        currentCycle: 0,
+        qualitySamples: 0,
+        currentPhase: 0,
+        progress: 0,
+        target: 1,
+        totalCycles: 0,
+        perfectAnchors: 0,
+        averageQuality: 0,
+        lastPhaseQuality: 0,
+        lastPhaseAnchored: false,
+        autoAnchorArmed: false,
+        runEarned: 0,
+        tracks: [0.65, 0.65, 0.65, 0.65],
+    }
+
+};
+
+var cardio = {
+    treadmill: {
+        id: 18,
+        name: "Treadmill Run",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 1.2,
+        strength: .02,
+        endurance: .08,
+        agility: .04,
+        tier: 0,
+        tiers: [
+            { name: "Walk Intervals", multiplier: 2, upgrade: 100 },
+            { name: "Treadmill Run", multiplier: 2, upgrade: 1000 },
+            { name: "Tempo Run", multiplier: 2, upgrade: 10000 },
+            { name: "Threshold Run", multiplier: 2, upgrade: 100000 },
+            { name: "Endless Belt", multiplier: 2, upgrade: 100000 }
+        ],
+    },
+    bike: {
+        id: 19,
+        name: "Stationary Bike",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 1.6,
+        strength: .03,
+        endurance: .07,
+        agility: .05,
+        tier: 0,
+        tiers: [
+            { name: "Easy Spin", multiplier: 2, upgrade: 100 },
+            { name: "Stationary Bike", multiplier: 2, upgrade: 1000 },
+            { name: "Cadence Ride", multiplier: 2, upgrade: 10000 },
+            { name: "Threshold Ride", multiplier: 2, upgrade: 100000 },
+            { name: "Velodrome Shift", multiplier: 2, upgrade: 100000 }
+        ],
+    },
+    row: {
+        id: 20,
+        name: "Rowing Machine",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 2.2,
+        strength: .06,
+        endurance: .06,
+        agility: .03,
+        tier: 0,
+        tiers: [
+            { name: "Seat Drills", multiplier: 2, upgrade: 100 },
+            { name: "Rowing Machine", multiplier: 2, upgrade: 1000 },
+            { name: "Split Chasing", multiplier: 2, upgrade: 10000 },
+            { name: "Power Row", multiplier: 2, upgrade: 100000 },
+            { name: "Engine Room", multiplier: 2, upgrade: 100000 }
+        ],
+    },
+    sprints: {
+        id: 21,
+        name: "Sprint Intervals",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 3.2,
+        strength: .08,
+        endurance: .04,
+        agility: .1,
+        tier: 0,
+        tiers: [
+            { name: "Stride Outs", multiplier: 2, upgrade: 100 },
+            { name: "Sprint Intervals", multiplier: 2, upgrade: 1000 },
+            { name: "Track Bursts", multiplier: 2, upgrade: 10000 },
+            { name: "Flying Starts", multiplier: 2, upgrade: 100000 },
+            { name: "Redline Repeats", multiplier: 2, upgrade: 100000 }
+        ],
+    },
+    hills: {
+        id: 22,
+        name: "Hill Climbs",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 3.8,
+        strength: .09,
+        endurance: .07,
+        agility: .05,
+        tier: 0,
+        tiers: [
+            { name: "Incline Walks", multiplier: 2, upgrade: 100 },
+            { name: "Hill Climbs", multiplier: 2, upgrade: 1000 },
+            { name: "Stair Slog", multiplier: 2, upgrade: 10000 },
+            { name: "Summit Push", multiplier: 2, upgrade: 100000 },
+            { name: "Mountain Legs", multiplier: 2, upgrade: 100000 }
+        ],
+    },
+    recovery: {
+        id: 23,
+        name: "Recovery Jog",
+        isStopped: 0,
+        total: 0,
+        current: 0,
+        increase: 10,
+        speed: 1000,
+        speedModifier: 1,
+        max: 60,
+        energy: 0.9,
+        strength: .01,
+        endurance: .05,
+        agility: .07,
+        tier: 0,
+        tiers: [
+            { name: "Walk It Off", multiplier: 2, upgrade: 100 },
+            { name: "Recovery Jog", multiplier: 2, upgrade: 1000 },
+            { name: "Reset Pace", multiplier: 2, upgrade: 10000 },
+            { name: "Cooldown Cruise", multiplier: 2, upgrade: 100000 },
+            { name: "Forever Warmdown", multiplier: 2, upgrade: 100000 }
+        ],
+    },
+    interval: {
+        activeRaceId: "",
+        playerProgress: 0,
+        rival1Progress: 0,
+        rival2Progress: 0,
+        totalRaces: 0,
+        averageQuality: 0,
+        qualitySamples: 0,
+        lastQuality: 0,
+        runEarned: 0,
+        autoRaceIndex: 1,
+        fatigue: 0,
+        currentPlace: 3,
+        lastAction: "settle",
+        raceSeconds: 0,
+    }
+};
+
 var gym = {
     employees: {
         trainers: {
@@ -1348,7 +1853,7 @@ var gym = {
         speed: 1000,
         speedModifier: 2,
         max: 50,
-        trainAmount: .1,
+        trainAmount: .15,
         barIncrease: 1.00,
     },
     createClasses: {
@@ -1358,7 +1863,7 @@ var gym = {
         speed: 1000,
         speedModifier: 2,
         max: 100,
-        classAmount: 1,
+        classAmount: 1.5,
         barIncrease: 1.00,
     },
     runCampaigns: {
@@ -1383,14 +1888,14 @@ var gym = {
     },
     money: {
         flatIncrease: 0.00,
-        growth: 0.0002,
+        growth: 0.00025,
         classMultiplier: 0.002
     },
     classes: 0,
     members: {
         current: 0,
         capacity: 50,
-        growth: .01,
+        growth: .015,
         focusId: 0,
         tiers: [
             {
@@ -1453,10 +1958,10 @@ var gym = {
         campaigns: 0,
         campaignGrowth: 1,
         ads: 0,
-        adGrowth: .1,
-        adMulti: .00002,
+        adGrowth: .15,
+        adMulti: .00003,
         influence: 0,
-        influenceGrowth: .00002,
+        influenceGrowth: .00006,
         employees: {
             coordinators: {
                 current: 0.00,
@@ -2185,7 +2690,110 @@ var gym = {
     },
     yoga: {
         upgrades: [
-
+            {
+                id: 0,
+                isActive: false,
+                isPurchased: false,
+                name: "Morning Bell Routine",
+                desc: "<strong>Cost: $2.5</strong> - Doubles Sun Salutation speed.",
+                cost: 2.5,
+            },
+            {
+                id: 1,
+                isActive: false,
+                isPurchased: false,
+                name: "Guided Form Session",
+                desc: "<strong>Cost: $25</strong> - Halves energy cost for Sun Salutations and Vinyasa Flow.",
+                cost: 25,
+            },
+            {
+                id: 2,
+                isActive: false,
+                isPurchased: false,
+                name: "Sequence Notebook",
+                desc: "<strong>Cost: $50</strong> - Doubles Vinyasa Flow speed.",
+                cost: 50,
+            },
+            {
+                id: 3,
+                isActive: false,
+                isPurchased: false,
+                name: "Balance Clinic",
+                desc: "<strong>Cost: $250</strong> - Doubles Balance Pose speed.",
+                cost: 250,
+            },
+            {
+                id: 4,
+                isActive: false,
+                isPurchased: false,
+                name: "Mobility Lab",
+                desc: "<strong>Cost: $250</strong> - Doubles Mobility Hold speed.",
+                cost: 250,
+            },
+            {
+                id: 5,
+                isActive: false,
+                isPurchased: false,
+                name: "Balance Corrections",
+                desc: "<strong>Cost: $500</strong> - Halves energy cost for Balance Pose.",
+                cost: 500,
+            },
+            {
+                id: 6,
+                isActive: false,
+                isPurchased: false,
+                name: "Mobility Corrections",
+                desc: "<strong>Cost: $500</strong> - Halves energy cost for Mobility Holds.",
+                cost: 500,
+            },
+            {
+                id: 7,
+                isActive: false,
+                isPurchased: false,
+                name: "Core Stability Camp",
+                desc: "<strong>Cost: $1000</strong> - Doubles Core Locks speed.",
+                cost: 1000,
+            },
+            {
+                id: 8,
+                isActive: false,
+                isPurchased: false,
+                name: "Breath Cadence Camp",
+                desc: "<strong>Cost: $1000</strong> - Doubles Breath Work speed.",
+                cost: 1000,
+            },
+            {
+                id: 9,
+                isActive: false,
+                isPurchased: false,
+                name: "Core/Breath Efficiency",
+                desc: "<strong>Cost: $2500</strong> - Halves energy cost for Core Locks and Breath Work.",
+                cost: 2500,
+            },
+            {
+                id: 10,
+                isActive: false,
+                isPurchased: false,
+                name: "Precision Form I",
+                desc: "<strong>Cost: $5000</strong> - Increases energy usage by 50% and doubles stat gain for Sun Salutations and Vinyasa Flow.",
+                cost: 5000,
+            },
+            {
+                id: 11,
+                isActive: false,
+                isPurchased: false,
+                name: "Precision Form II",
+                desc: "<strong>Cost: $10000</strong> - Increases energy usage by 50% and doubles stat gain for Balance and Mobility.",
+                cost: 10000,
+            },
+            {
+                id: 12,
+                isActive: false,
+                isPurchased: false,
+                name: "Precision Form III",
+                desc: "<strong>Cost: $25000</strong> - Increases energy usage by 50% and doubles stat gain for Core and Breath Work.",
+                cost: 25000,
+            }
         ],
         gymUpgrades: [
 
@@ -2195,7 +2803,110 @@ var gym = {
     },
     cardio: {
         upgrades: [
-
+            {
+                id: 0,
+                isActive: false,
+                isPurchased: false,
+                name: "New Belt",
+                desc: "<strong>Cost: $100</strong> - Double treadmill speed.",
+                cost: 100,
+            },
+            {
+                id: 1,
+                isActive: false,
+                isPurchased: false,
+                name: "Low-Impact Shoes",
+                desc: "<strong>Cost: $250</strong> - Halve treadmill and bike energy use.",
+                cost: 250,
+            },
+            {
+                id: 2,
+                isActive: false,
+                isPurchased: false,
+                name: "Clipless Pedals",
+                desc: "<strong>Cost: $500</strong> - Double bike speed.",
+                cost: 500,
+            },
+            {
+                id: 3,
+                isActive: false,
+                isPurchased: false,
+                name: "Handle Pull Tune-Up",
+                desc: "<strong>Cost: $1000</strong> - Double rowing machine speed.",
+                cost: 1000,
+            },
+            {
+                id: 4,
+                isActive: false,
+                isPurchased: false,
+                name: "Track Spikes",
+                desc: "<strong>Cost: $1500</strong> - Double sprint interval speed.",
+                cost: 1500,
+            },
+            {
+                id: 5,
+                isActive: false,
+                isPurchased: false,
+                name: "Stroke Drill",
+                desc: "<strong>Cost: $2500</strong> - Halve rowing machine energy use.",
+                cost: 2500,
+            },
+            {
+                id: 6,
+                isActive: false,
+                isPurchased: false,
+                name: "Stride Coach",
+                desc: "<strong>Cost: $5000</strong> - Halve sprint interval energy use.",
+                cost: 5000,
+            },
+            {
+                id: 7,
+                isActive: false,
+                isPurchased: false,
+                name: "Weighted Vest Marches",
+                desc: "<strong>Cost: $7500</strong> - Double hill climb speed.",
+                cost: 7500,
+            },
+            {
+                id: 8,
+                isActive: false,
+                isPurchased: false,
+                name: "Cooldown Music",
+                desc: "<strong>Cost: $10000</strong> - Double recovery jog speed.",
+                cost: 10000,
+            },
+            {
+                id: 9,
+                isActive: false,
+                isPurchased: false,
+                name: "Better Incline Control",
+                desc: "<strong>Cost: $15000</strong> - Halve hill climb and recovery jog energy use.",
+                cost: 15000,
+            },
+            {
+                id: 10,
+                isActive: false,
+                isPurchased: false,
+                name: "Mileage Log I",
+                desc: "<strong>Cost: $5000</strong> - Treadmill and bike gain double stats per bar fill at +50% energy use.",
+                cost: 5000,
+            },
+            {
+                id: 11,
+                isActive: false,
+                isPurchased: false,
+                name: "Mileage Log II",
+                desc: "<strong>Cost: $10000</strong> - Rowing machine and sprints gain double stats per bar fill at +50% energy use.",
+                cost: 10000,
+            },
+            {
+                id: 12,
+                isActive: false,
+                isPurchased: false,
+                name: "Mileage Log III",
+                desc: "<strong>Cost: $25000</strong> - Hills and recovery jog gain double stats per bar fill at +50% energy use.",
+                cost: 25000,
+            }
         ],
         gymUpgrades: [
 
@@ -2425,6 +3136,142 @@ var prestige = {
             desc: "<strong>Cost: 5 Global Points</strong> - Unlock lifting gyms.",
             cost: 5
         },
+        {
+            id: 27,
+            isActive: false,
+            isPurchased: false,
+            name: "Referral Bootcamp",
+            desc: "<strong>Cost: 24 Global Points</strong> - Double ad growth speed from campaigns.",
+            cost: 24
+        },
+        {
+            id: 28,
+            isActive: false,
+            isPurchased: false,
+            name: "Lab Rat Army",
+            desc: "<strong>Cost: 30 Global Points</strong> - Double ad influence gain from campaigns.",
+            cost: 30
+        },
+        {
+            id: 29,
+            isActive: false,
+            isPurchased: false,
+            name: "Commercial Landlord",
+            desc: "<strong>Cost: 36 Global Points</strong> - Double gym member recruitment speed.",
+            cost: 36
+        },
+        {
+            id: 30,
+            isActive: false,
+            isPurchased: false,
+            name: "Sponsorship Scam",
+            desc: "<strong>Cost: 42 Global Points</strong> - Double gym money growth from members.",
+            cost: 42
+        },
+        {
+            id: 31,
+            isActive: false,
+            isPurchased: false,
+            name: "Macros On Macros",
+            desc: "<strong>Cost: 48 Global Points</strong> - Double nutritionist boost scaling.",
+            cost: 48
+        },
+        {
+            id: 32,
+            isActive: false,
+            isPurchased: false,
+            name: "Ad Agency Menace",
+            desc: "<strong>Cost: 54 Global Points</strong> - Double marketing manager boost scaling.",
+            cost: 54
+        },
+        {
+            id: 33,
+            isActive: false,
+            isPurchased: false,
+            name: "Yoga Studios",
+            desc: "<strong>Cost: 8 Global Points</strong> - Unlock yoga gyms.",
+            cost: 8
+        },
+        {
+            id: 34,
+            isActive: false,
+            isPurchased: false,
+            name: "Peak Marketing Stack",
+            desc: "<strong>Cost: 84 Global Points</strong> - Double ad conversion from campaigns into ads.",
+            cost: 84
+        },
+        {
+            id: 35,
+            isActive: false,
+            isPurchased: false,
+            name: "Franchise Bookkeeping",
+            desc: "<strong>Cost: 94 Global Points</strong> - Double class-income scaling for gyms.",
+            cost: 94
+        },
+        {
+            id: 36,
+            isActive: false,
+            isPurchased: false,
+            name: "Trainer Cartel",
+            desc: "<strong>Cost: 106 Global Points</strong> - Double member training throughput.",
+            cost: 106
+        },
+        {
+            id: 37,
+            isActive: false,
+            isPurchased: false,
+            name: "Class Assembly Line",
+            desc: "<strong>Cost: 118 Global Points</strong> - Double class creation throughput.",
+            cost: 118
+        },
+        {
+            id: 38,
+            isActive: false,
+            isPurchased: false,
+            name: "Campaign Syndicate",
+            desc: "<strong>Cost: 132 Global Points</strong> - Double campaign stock growth from ads.",
+            cost: 132
+        },
+        {
+            id: 39,
+            isActive: false,
+            isPurchased: false,
+            name: "Recovery Reserve",
+            desc: "<strong>Cost: 148 Global Points</strong> - Increase global energy recovery by 50%.",
+            cost: 148
+        },
+        {
+            id: 40,
+            isActive: false,
+            isPurchased: false,
+            name: "Closer Swarm",
+            desc: "<strong>Cost: 166 Global Points</strong> - Increase gym sales staff effectiveness by 50%.",
+            cost: 166
+        },
+        {
+            id: 41,
+            isActive: false,
+            isPurchased: false,
+            name: "Coordinator Cartel",
+            desc: "<strong>Cost: 186 Global Points</strong> - Increase class and campaign coordinator progress by 50%.",
+            cost: 186
+        },
+        {
+            id: 42,
+            isActive: false,
+            isPurchased: false,
+            name: "Template Laundering",
+            desc: "<strong>Cost: 210 Global Points</strong> - Increase trainer and ad designer progress by 50%.",
+            cost: 210
+        },
+        {
+            id: 43,
+            isActive: false,
+            isPurchased: false,
+            name: "Cardio Clubs",
+            desc: "<strong>Cost: 12 Global Points</strong> - Unlock cardio gyms.",
+            cost: 12
+        },
     ],
     bw: {
         current: 0,
@@ -2592,6 +3439,64 @@ var prestige = {
                 desc: "<strong>Cost: 15 Bodyweight Points</strong> - Auto-Absorb Gangs (toggle in options tab).",
                 cost: 15
             },
+            {
+                id: 20,
+                isActive: false,
+                isPurchased: false,
+                name: "Street Legend",
+                desc: "<strong>Cost: 20 Bodyweight Points</strong> - Permanent boost to all gyms: +8% global action speed.",
+                cost: 20
+            },
+            {
+                id: 21,
+                isActive: false,
+                isPurchased: false,
+                name: "Neighborhood Mentors",
+                desc: "<strong>Cost: 22 Bodyweight Points</strong> - Passively gain confidence very slowly over time.",
+                cost: 22
+            },
+        ],
+        confidenceUpgrades: [
+            {
+                id: 0,
+                isActive: false,
+                isPurchased: false,
+                name: "Swagger Science",
+                desc: "<strong>Cost: 1 Confidence</strong> - Increases confidence effectiveness by +2% per confidence point.",
+                cost: 1
+            },
+            {
+                id: 1,
+                isActive: false,
+                isPurchased: false,
+                name: "Pep Rally Blitz",
+                desc: "<strong>Cost: 2 Confidence</strong> - +28% gym member recruitment speed across all gyms.",
+                cost: 2
+            },
+            {
+                id: 2,
+                isActive: false,
+                isPurchased: false,
+                name: "Form Police Hotline",
+                desc: "<strong>Cost: 3 Confidence</strong> - +25% member training and class throughput across all gyms.",
+                cost: 3
+            },
+            {
+                id: 3,
+                isActive: false,
+                isPurchased: false,
+                name: "Street Intel Network",
+                desc: "<strong>Cost: 5 Confidence</strong> - +35% gang growth while keeping pressure in street fights.",
+                cost: 5
+            },
+            {
+                id: 4,
+                isActive: false,
+                isPurchased: false,
+                name: "Rival Film Room",
+                desc: "<strong>Cost: 1 Confidence</strong> - +50% confidence from each gang absorption.",
+                cost: 1
+            },
         ]
     },
     lifting: {
@@ -2604,8 +3509,8 @@ var prestige = {
                 id: 0,
                 isActive: false,
                 isPurchased: false,
-                name: "Competitions",
-                desc: "<strong>Cost: 1 Lifting Point</strong> - Unlock competitions.",
+                name: "Lifting Academy",
+                desc: "<strong>Cost: 1 Lifting Point</strong> - Unlock seasons and academy progression.",
                 cost: 1
             },
             {
@@ -2613,7 +3518,7 @@ var prestige = {
                 isActive: false,
                 isPurchased: false,
                 name: "Unlock Permanent Leadership",
-                desc: "<strong>Cost: 2 Lifting Points</strong> - Leadership gained from creating world-wide conferences provides a permanent 2% per point boost to all stat gain.",
+                desc: "<strong>Cost: 2 Lifting Points</strong> - Leadership gained from completed academy meets provides a permanent 2% per point boost to all stat gain.",
                 cost: 2
             },
             {
@@ -2740,30 +3645,336 @@ var prestige = {
                 id: 17,
                 isActive: false,
                 isPurchased: false,
-                name: "Competition Strength",
-                desc: "<strong>Cost: 4 Lifting Points</strong> - Lifting weights provide double the modifier for competitions.",
+                name: "Meet Intensity",
+                desc: "<strong>Cost: 4 Lifting Points</strong> - Increases lifting season progress scaling from lift weight by 110%.",
                 cost: 4
             },
             {
                 id: 18,
                 isActive: false,
                 isPurchased: false,
-                name: "Conference Help",
-                desc: "<strong>Cost: 15 Lifting Points</strong> - Autobuy Conferences (toggle in options tab).",
+                name: "Academy Staff",
+                desc: "<strong>Cost: 15 Lifting Points</strong> - Automate academy camp allocation and academy upgrades (toggle in options tab).",
                 cost: 15
+            },
+            {
+                id: 19,
+                isActive: false,
+                isPurchased: false,
+                name: "Meet Legend",
+                desc: "<strong>Cost: 20 Lifting Points</strong> - Permanent boost to all gyms: keep 25% overflow progress on completions.",
+                cost: 20
+            },
+            {
+                id: 20,
+                isActive: false,
+                isPurchased: false,
+                name: "Veteran Speakers",
+                desc: "<strong>Cost: 22 Lifting Points</strong> - Passively gain leadership very slowly over time.",
+                cost: 22
+            },
+        ],
+        leadershipUpgrades: [
+            {
+                id: 0,
+                isActive: false,
+                isPurchased: false,
+                name: "Executive Presence",
+                desc: "<strong>Cost: 1 Leadership</strong> - Increases leadership effectiveness by +2% per leadership point.",
+                cost: 1
+            },
+            {
+                id: 1,
+                isActive: false,
+                isPurchased: false,
+                name: "Judge Whisperer",
+                desc: "<strong>Cost: 2 Leadership</strong> - +4 training camp points for academy stat allocation.",
+                cost: 2
+            },
+            {
+                id: 2,
+                isActive: false,
+                isPurchased: false,
+                name: "Sponsor Roundtable",
+                desc: "<strong>Cost: 3 Leadership</strong> - +25% influence gain and campaign growth.",
+                cost: 3
+            },
+            {
+                id: 3,
+                isActive: false,
+                isPurchased: false,
+                name: "Boardroom Stretch Goal",
+                desc: "<strong>Cost: 5 Leadership</strong> - +15% gym money growth from members.",
+                cost: 5
+            },
+            {
+                id: 4,
+                isActive: false,
+                isPurchased: false,
+                name: "Judge Replay Booth",
+                desc: "<strong>Cost: 1 Leadership</strong> - +50% leadership from completed academy meets.",
+                cost: 1
             },
         ],
     },
     yoga: {
         current: 0,
         total: 0,
+        flow: 0,
+        flowBoost: 0,
         upgrades: [
-
+            {
+                id: 0,
+                isActive: false,
+                isPurchased: false,
+                name: "Route Draft",
+                desc: "<strong>Cost: 1 Yoga Point</strong> - Unlock the Yoga Route minigame and Flow generation.",
+                cost: 1
+            },
+            {
+                id: 1,
+                isActive: false,
+                isPurchased: false,
+                name: "Unlock Permanent Flow",
+                desc: "<strong>Cost: 2 Yoga Points</strong> - Flow gained from yoga stability provides permanent bonuses across all gyms: action speed, max energy, and energy recovery.",
+                cost: 2
+            },
+            {
+                id: 2,
+                isActive: false,
+                isPurchased: false,
+                name: "Half-Energy Sun Salutations",
+                desc: "<strong>Cost: 2 Yoga Points</strong> - Sun Salutations use half the energy.",
+                cost: 2
+            },
+            {
+                id: 3,
+                isActive: false,
+                isPurchased: false,
+                name: "Half-Energy Vinyasa Flow",
+                desc: "<strong>Cost: 2 Yoga Points</strong> - Vinyasa Flow uses half the energy.",
+                cost: 2
+            },
+            {
+                id: 4,
+                isActive: false,
+                isPurchased: false,
+                name: "Half-Energy Balance",
+                desc: "<strong>Cost: 3 Yoga Points</strong> - Balance Poses use half the energy.",
+                cost: 3
+            },
+            {
+                id: 5,
+                isActive: false,
+                isPurchased: false,
+                name: "Half-Energy Mobility",
+                desc: "<strong>Cost: 3 Yoga Points</strong> - Mobility Holds use half the energy.",
+                cost: 3
+            },
+            {
+                id: 6,
+                isActive: false,
+                isPurchased: false,
+                name: "Double Stat Sun Salutations",
+                desc: "<strong>Cost: 4 Yoga Points</strong> - Sun Salutations give double stats per bar fill.",
+                cost: 4
+            },
+            {
+                id: 7,
+                isActive: false,
+                isPurchased: false,
+                name: "Double Stat Vinyasa Flow",
+                desc: "<strong>Cost: 4 Yoga Points</strong> - Vinyasa Flow gives double stats per bar fill.",
+                cost: 4
+            },
+            {
+                id: 8,
+                isActive: false,
+                isPurchased: false,
+                name: "Half-Energy Core Locks",
+                desc: "<strong>Cost: 5 Yoga Points</strong> - Core Locks use half the energy.",
+                cost: 5
+            },
+            {
+                id: 9,
+                isActive: false,
+                isPurchased: false,
+                name: "Half-Energy Breath Work",
+                desc: "<strong>Cost: 5 Yoga Points</strong> - Breath Work uses half the energy.",
+                cost: 5
+            },
+            {
+                id: 10,
+                isActive: false,
+                isPurchased: false,
+                name: "Double Stat Balance",
+                desc: "<strong>Cost: 6 Yoga Points</strong> - Balance Poses give double stats per bar fill.",
+                cost: 6
+            },
+            {
+                id: 11,
+                isActive: false,
+                isPurchased: false,
+                name: "Double Stat Mobility",
+                desc: "<strong>Cost: 6 Yoga Points</strong> - Mobility Holds give double stats per bar fill.",
+                cost: 6
+            },
+            {
+                id: 12,
+                isActive: false,
+                isPurchased: false,
+                name: "Double Stat Core Locks",
+                desc: "<strong>Cost: 8 Yoga Points</strong> - Core Locks give double stats per bar fill.",
+                cost: 8
+            },
+            {
+                id: 13,
+                isActive: false,
+                isPurchased: false,
+                name: "Double Stat Breath Work",
+                desc: "<strong>Cost: 8 Yoga Points</strong> - Breath Work gives double stats per bar fill.",
+                cost: 8
+            },
+            {
+                id: 14,
+                isActive: false,
+                isPurchased: false,
+                name: "Autobuy Workout Upgrades",
+                desc: "<strong>Cost: 10 Yoga Points</strong> - Buy yoga workout upgrades as they become available (toggle in options tab).",
+                cost: 10
+            },
+            {
+                id: 15,
+                isActive: false,
+                isPurchased: false,
+                name: "Autobuy Gym Upgrades",
+                desc: "<strong>Cost: 10 Yoga Points</strong> - Buy gym upgrades as they become available (toggle in options tab).",
+                cost: 10
+            },
+            {
+                id: 16,
+                isActive: false,
+                isPurchased: false,
+                name: "Autobuy Advertising Upgrades",
+                desc: "<strong>Cost: 10 Yoga Points</strong> - Buy advertising upgrades as they become available (toggle in options tab).",
+                cost: 10
+            },
+            {
+                id: 17,
+                isActive: false,
+                isPurchased: false,
+                name: "Route Reading",
+                desc: "<strong>Cost: 4 Yoga Points</strong> - Doubles route control power from yoga stats.",
+                cost: 4
+            },
+            {
+                id: 18,
+                isActive: false,
+                isPurchased: false,
+                name: "Route Automation",
+                desc: "<strong>Cost: 15 Yoga Points</strong> - Auto-pick route options and auto-stabilize when risky (toggle in options tab).",
+                cost: 15
+            },
+            {
+                id: 19,
+                isActive: false,
+                isPurchased: false,
+                name: "Recovery Protocol",
+                desc: "<strong>Cost: 19 Yoga Points</strong> - Permanent boost to all gyms: +12% energy recovery.",
+                cost: 19
+            },
+            {
+                id: 20,
+                isActive: false,
+                isPurchased: false,
+                name: "Quiet Studio",
+                desc: "<strong>Cost: 18 Yoga Points</strong> - Passively gain Flow very slowly over time.",
+                cost: 18
+            }
+        ],
+        flowUpgrades: [
+            {
+                id: 0,
+                isActive: false,
+                isPurchased: false,
+                name: "Breath Economics",
+                desc: "<strong>Cost: 1 Flow</strong> - Increases all Flow per-point bonuses by +0.10%.",
+                cost: 1
+            },
+            {
+                id: 1,
+                isActive: false,
+                isPurchased: false,
+                name: "Nervous System Reset",
+                desc: "<strong>Cost: 2 Flow</strong> - +20% energy regeneration across all gyms.",
+                cost: 2
+            },
+            {
+                id: 2,
+                isActive: false,
+                isPurchased: false,
+                name: "Sequence Memory",
+                desc: "<strong>Cost: 2 Flow</strong> - +15% workout action speed across all gyms.",
+                cost: 2
+            },
+            {
+                id: 3,
+                isActive: false,
+                isPurchased: false,
+                name: "Quiet Mind",
+                desc: "<strong>Cost: 2 Flow</strong> - +30% route control and Flow reward rate.",
+                cost: 2
+            },
+            {
+                id: 4,
+                isActive: false,
+                isPurchased: false,
+                name: "Wave Reading",
+                desc: "<strong>Cost: 1 Flow</strong> - +50% Flow from clean routes after stabilization actions.",
+                cost: 1
+            },
         ],
     },
     cardio: {
         current: 0,
         total: 0,
+        pace: 0,
+        paceBoost: 0,
+        upgrades: [
+            { id: 0, isActive: false, isPurchased: false, name: "Race Day", desc: "<strong>Cost: 1 Cardio Point</strong> - Unlock Race Day events and Pace rewards.", cost: 1 },
+            { id: 1, isActive: false, isPurchased: false, name: "Unlock Permanent Pace", desc: "<strong>Cost: 2 Cardio Points</strong> - Pace gives a permanent boost to all gym action speed, max energy, and recovery.", cost: 2 },
+            { id: 2, isActive: false, isPurchased: false, name: "Half-Energy Treadmill", desc: "<strong>Cost: 2 Cardio Points</strong> - Treadmill runs use half the energy.", cost: 2 },
+            { id: 3, isActive: false, isPurchased: false, name: "Half-Energy Bike", desc: "<strong>Cost: 2 Cardio Points</strong> - Stationary bike uses half the energy.", cost: 2 },
+            { id: 4, isActive: false, isPurchased: false, name: "Half-Energy Row", desc: "<strong>Cost: 3 Cardio Points</strong> - Rowing machine uses half the energy.", cost: 3 },
+            { id: 5, isActive: false, isPurchased: false, name: "Half-Energy Sprints", desc: "<strong>Cost: 3 Cardio Points</strong> - Sprint intervals use half the energy.", cost: 3 },
+            { id: 6, isActive: false, isPurchased: false, name: "Double Stat Treadmill", desc: "<strong>Cost: 4 Cardio Points</strong> - Treadmill runs give double stats per bar fill.", cost: 4 },
+            { id: 7, isActive: false, isPurchased: false, name: "Double Stat Bike", desc: "<strong>Cost: 4 Cardio Points</strong> - Stationary bike gives double stats per bar fill.", cost: 4 },
+            { id: 8, isActive: false, isPurchased: false, name: "Half-Energy Hills", desc: "<strong>Cost: 5 Cardio Points</strong> - Hill climbs use half the energy.", cost: 5 },
+            { id: 9, isActive: false, isPurchased: false, name: "Half-Energy Recovery", desc: "<strong>Cost: 5 Cardio Points</strong> - Recovery jog uses half the energy.", cost: 5 },
+            { id: 10, isActive: false, isPurchased: false, name: "Double Stat Row", desc: "<strong>Cost: 6 Cardio Points</strong> - Rowing machine gives double stats per bar fill.", cost: 6 },
+            { id: 11, isActive: false, isPurchased: false, name: "Double Stat Sprints", desc: "<strong>Cost: 6 Cardio Points</strong> - Sprint intervals give double stats per bar fill.", cost: 6 },
+            { id: 12, isActive: false, isPurchased: false, name: "Double Stat Hills", desc: "<strong>Cost: 8 Cardio Points</strong> - Hill climbs give double stats per bar fill.", cost: 8 },
+            { id: 13, isActive: false, isPurchased: false, name: "Double Stat Recovery", desc: "<strong>Cost: 8 Cardio Points</strong> - Recovery jog gives double stats per bar fill.", cost: 8 },
+            { id: 14, isActive: false, isPurchased: false, name: "Autobuy Workout Upgrades", desc: "<strong>Cost: 10 Cardio Points</strong> - Buy workout upgrades as they become available (toggle in options tab).", cost: 10 },
+            { id: 15, isActive: false, isPurchased: false, name: "Autobuy Gym Upgrades", desc: "<strong>Cost: 10 Cardio Points</strong> - Buy gym upgrades as they become available (toggle in options tab).", cost: 10 },
+            { id: 16, isActive: false, isPurchased: false, name: "Autobuy Advertising Upgrades", desc: "<strong>Cost: 10 Cardio Points</strong> - Buy advertising upgrades as they become available (toggle in options tab).", cost: 10 },
+            { id: 17, isActive: false, isPurchased: false, name: "Negative Split", desc: "<strong>Cost: 4 Cardio Points</strong> - Race Day events finish 35% faster and pay 20% more Pace.", cost: 4 },
+            { id: 18, isActive: false, isPurchased: false, name: "Race Day Automation", desc: "<strong>Cost: 15 Cardio Points</strong> - Automatically queue and pace Race Day events (toggle in options tab).", cost: 15 },
+            { id: 19, isActive: false, isPurchased: false, name: "Endurance Engine", desc: "<strong>Cost: 20 Cardio Points</strong> - Permanent boost to all gyms: +6% action speed, +10% max energy.", cost: 20 },
+            { id: 20, isActive: false, isPurchased: false, name: "Always On", desc: "<strong>Cost: 22 Cardio Points</strong> - Passively gain Pace very slowly over time.", cost: 22 },
+        ],
+        paceUpgrades: [
+            { id: 0, isActive: false, isPurchased: false, name: "Split Tracking", desc: "<strong>Cost: 1 Pace</strong> - Increases Pace effectiveness by +0.10% per Pace point.", cost: 1 },
+            { id: 1, isActive: false, isPurchased: false, name: "Breathing Economy", desc: "<strong>Cost: 2 Pace</strong> - +20% energy recovery across all gyms.", cost: 2 },
+            { id: 2, isActive: false, isPurchased: false, name: "Efficient Motion", desc: "<strong>Cost: 2 Pace</strong> - +12% action speed across all gyms.", cost: 2 },
+            { id: 3, isActive: false, isPurchased: false, name: "Cadence Lock", desc: "<strong>Cost: 2 Pace</strong> - +35% Race Day speed and finish quality.", cost: 2 },
+            { id: 4, isActive: false, isPurchased: false, name: "Photo Finish", desc: "<strong>Cost: 1 Pace</strong> - +50% Pace from completed Race Day events.", cost: 1 },
+        ],
+    },
+    layer2: {
+        current: 0,
+        total: 0,
+        spent: 0,
         upgrades: [
 
         ],
@@ -2806,12 +4017,29 @@ var checks = {
     liftingGymBuyerOn: false,
     liftingAdBuyer: false,
     liftingAdBuyerOn: false,
+    yogaUpgradeBuyer: false,
+    yogaUpgradeBuyerOn: false,
+    yogaGymBuyer: false,
+    yogaGymBuyerOn: false,
+    yogaAdBuyer: false,
+    yogaAdBuyerOn: false,
+    cardioUpgradeBuyer: false,
+    cardioUpgradeBuyerOn: false,
+    cardioGymBuyer: false,
+    cardioGymBuyerOn: false,
+    cardioAdBuyer: false,
+    cardioAdBuyerOn: false,
+    paceBuyer: false,
+    paceBuyerOn: false,
     coffeeClicker: false,
     coffeeClickerOn: false,
     absorbGangs: false,
     absorbGangsOn: false,
     conferenceBuyer: false,
     conferenceBuyerOn: false,
+    breathBuyer: false,
+    breathBuyerOn: false,
+    liftingAcademyMigrationV1: false,
 };
 
 
@@ -2824,3 +4052,5 @@ var baseChecks = JSON.parse(JSON.stringify(checks));
 var baseGym = JSON.parse(JSON.stringify(gym));
 var basePrestige = JSON.parse(JSON.stringify(prestige));
 var baseLifting = JSON.parse(JSON.stringify(lifting));
+var baseYoga = JSON.parse(JSON.stringify(yoga));
+var baseCardio = JSON.parse(JSON.stringify(cardio));

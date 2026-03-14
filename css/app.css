@@ -1,3 +1,40 @@
 .progress-upgrade {
     height: 5px;
 }
+
+.academy-camp-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px 40px 40px;
+    column-gap: 0.5rem;
+    align-items: center;
+}
+
+.academy-camp-label {
+    min-width: 0;
+}
+
+.academy-camp-value {
+    text-align: right;
+    font-weight: 600;
+}
+
+.academy-camp-btn {
+    padding: 0.05rem 0;
+}
+
+.energy-progress-wrap {
+    position: relative;
+}
+
+.energy-progress-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #f8f9fa;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}

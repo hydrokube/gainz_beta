@@ -1,3 +1,583 @@
+v.72 - 3/14/2026
+
+    Raised all passive meta-currency capstone drip rates to the new shared baseline:
+        - `Confidence`, `Leadership`, `Flow`, and `Pace` now all generate at `0.00003/s`
+        - this doubles the prior passive trickle while keeping all four currencies aligned
+    Updated regression expectations and revalidated:
+        - passive-generation targeted Playwright coverage passed (`5/5`)
+        - smoke Playwright passed (`2/2`)
+        - full Playwright suite passed (`82/82`)
+
+v.71 - 3/14/2026
+
+    Fixed the actual live-runtime passive `Flow` / `Pace` bug:
+        - `assertValidState` was truncating `Flow` and `Pace` back through the 4-decimal prestige normalizer every strict tick
+        - because the passive drip is `0.000015/s`, live gameplay was zeroing that gain before it could accumulate
+        - `Flow` / `Pace` now follow the same pattern as `Confidence` / `Leadership`: sanitized for invalid values, but not per-second rounded back to zero
+    Added a real runtime regression:
+        - new Playwright coverage verifies that buying the passive upgrades and running at debug speed in non-deterministic mode actually grows both currencies over time
+    Revalidated:
+        - targeted passive-meta + repeatable UI Playwright coverage passed (`7/7`)
+        - smoke Playwright passed (`2/2`)
+        - full Playwright suite passed (`82/82`)
+
+v.70 - 3/14/2026
+
+    Fixed the remaining passive Flow/Pace visibility issue:
+        - `formatMetaPoints` no longer rounds sub-`0.01` meta currency through the internal 4-decimal clamp before display
+        - the first passive second from `Always On` and the matching yoga passive upgrade now renders as a visible non-zero value instead of reading as `0.00`
+    Revalidated:
+        - targeted passive-meta + repeatable UI Playwright coverage passed (`6/6`)
+        - smoke Playwright passed (`2/2`)
+        - full Playwright suite passed (`81/81`)
+
+v.69 - 3/14/2026
+
+    Fixed delayed cardio/pace repeatable refresh and passive meta-currency feedback:
+        - cardio and Pace repeatables now refresh their level/button state immediately after purchase instead of waiting for a new gym/reset
+        - passive Confidence/Leadership/Flow/Pace generation now goes through one shared application path in both live and offline processing
+        - tiny passive meta-currency gains now render with enough precision to verify that `Always On` and the matching yoga passive upgrade are working
+        - passive Flow/Pace gains now refresh repeatable affordability in real time as soon as they cross purchase thresholds
+    Added regression coverage and revalidated:
+        - targeted passive-meta + repeatable UI Playwright coverage passed (`6/6`)
+        - smoke Playwright passed (`2/2`)
+        - full Playwright suite passed (`81/81`)
+
+v.68 - 3/8/2026
+
+    Adjusted Race Day contrast after manual UI feedback:
+        - `Settle` now uses a brighter blue/info treatment instead of dark grey
+        - `Rival A` race bar now uses a clearer visible color instead of dark grey
+    Revalidated the UI-only change:
+        - smoke Playwright passed
+        - full Playwright suite passed (`78/78`)
+
+v.67 - 3/8/2026
+
+    Replaced cardio's short-lived `Ghost Race` pass with a more visual `Race Day` minigame:
+        - the cardio minigame now shows visible race bars for `You`, `Rival A`, and `Rival B`
+        - controls are now `Push / Settle / Recover`, focused on race position instead of ghost pacing checkpoints
+        - event choices are now `Neighborhood Heat`, `City Circuit`, and `Final Stretch`
+    Simplified the cardio automation path and cleaned up framing:
+        - the existing single automation unlock now covers the full Race Day loop
+        - autobuyer label is now `Race Day Automation`
+        - Pace Shop is no longer rendered in the minigame area
+    Preserved cardio stability while migrating state forward:
+        - cardio run state now tracks player/rival race progress, place, fatigue, and event timing
+        - legacy ghost/interval save fields are still mapped forward safely on load
+    Updated validation:
+        - rewrote `tests/cardio-interval.spec.ts` around Race Day behavior and reset semantics
+        - targeted cardio tests, smoke Playwright, and full Playwright suite now pass (`78/78`)
+
+v.66 - 3/8/2026
+
+    Replaced cardio's first-pass `Interval Plan` minigame with a distinct `Ghost Race` loop:
+        - new ghost templates (`Early Pacer`, `Pack Chaser`, `Redline Ghost`) with reactive `Push / Hold / Recover` controls
+        - cardio minigame UI now reports checkpoint pacing, current pace, fatigue, and race-quality feedback instead of route-like plan segments
+        - Pace automation now acts as `Ghost Race Automation` and continues to queue/pilot races without changing the rest of cardio
+    Preserved cardio integration while migrating old state safely:
+        - `cardio.interval` now stores ghost-race fields and maps legacy interval-plan save data forward on load
+        - Pace rewards, per-run caps, save/load/reset, and new-cardio-run reset behavior remain intact
+    Updated coverage and reran validation:
+        - rewrote `tests/cardio-interval.spec.ts` around Ghost Race behavior and reset semantics
+        - targeted Ghost Race tests, smoke Playwright, and full Playwright suite now pass (`78/78`)
+
+v.65 - 3/8/2026
+
+    Added the first full cardio implementation pass:
+        - new cardio run state, six smooth-progress exercises, save/load/reset wiring, and Open Gym unlock path
+        - new Interval Plan minigame with Pace rewards, run cap handling, and cardio-specific UI in the minigame tab
+        - new cardio prestige shop, Pace shop, repeatables, capstone/passive Pace upgrades, and cardio autobuyer toggles
+    Extended shared systems for cardio:
+        - cross-gym Pace bonuses now affect action speed, max energy, and recovery with a softcapped meta tooltip
+        - offline progress, debug/runtime restarts, and repeating-upgrade plumbing now include cardio / Pace state
+    Added cardio regression coverage and revalidated the suite:
+        - new `tests/cardio-interval.spec.ts`
+        - full Playwright suite now passes `77/77`
+
+v.64 - 3/8/2026
+
+    Removed branch-completion spread from `scripts/content-completion-sim.cjs` content-gap reporting:
+        - mixed-policy branch order is not intended to model real player behavior, so `>2h` branch spread is no longer treated as actionable by itself
+    Validated the saved authoritative reports against the remaining real checks:
+        - no global-shop exhaustion gap remains in either policy
+        - no Flow-shop cadence gap remains once pre-route Yoga sample runs are excluded
+        - late endgame branch runs are still roughly `40-70m`, which leaves runway for cardio without forcing another immediate economy pass
+    Reviewed the recent Yoga/global tuning changes and kept them:
+        - late global upgrades `40-42` still make sense because they fix the late global dead zone independently of branch order
+        - the late Yoga cost / cadence trims still make sense because they improve Yoga branch feel without causing Flow to overshoot once routes are actually available
+
+v.63 - 3/7/2026
+
+    Adjusted the full-content Yoga pacing heuristic in `scripts/content-completion-sim.cjs`:
+        - Yoga runs with `0` completed routes no longer count as Flow-cap failures
+        - this matches the current gym structure, where the first Yoga sample run can end before the route loop is actually available
+    Validated the heuristic against the saved authoritative reports:
+        - `sim-results/content-completion-human_10m-eco058-final.json`
+        - `sim-results/content-completion-branch_locked_10m-eco058-final.json`
+        - once pre-route samples are excluded, both reports show `0` weak-Flow Yoga runs
+
+v.62 - 3/7/2026
+
+    Added a first dual-policy late Layer 1 retune pass:
+        - new late global upgrades `40-42` in `js/stats.js` / `js/app.js`
+        - trimmed late Yoga shop costs (`Quiet Mind`, `Quiet Studio`)
+        - nudged late-run Yoga Flow pacing upward for completed Yoga branches
+    Re-ran authoritative full-content sims under both policies and saved final copies to `sim-results/`:
+        - `sim-results/content-completion-human_10m-eco058-final.json`
+        - `sim-results/content-completion-branch_locked_10m-eco058-final.json`
+    Current post-retune results:
+        - mixed `human_10m`: global shop now lasts until full completion (`139h 30m` total), but Yoga branch still finishes about `2h 30m` after the earliest Layer 1 branch
+        - branch-locked `branch_locked_10m`: global shop now lasts past branch completion (`139h 20m` total), with bodyweight / lifting / yoga branch completions at `89h 10m`, `116h 10m`, and `134h 40m`
+    Remaining issue is now localized:
+        - the first Yoga sample run still earns `0` Flow because the route system is not unlocked until after the first Yoga point
+        - the mixed-policy Yoga branch is still roughly `30m` outside the `<=2h` spread target
+    Re-ran the full Playwright suite after the pass (`74/74` passing)
+
+v.61 - 3/7/2026
+
+    Added a second authoritative full-content sim policy in `scripts/content-completion-sim.cjs`:
+        - `CONTENT_SIM_POLICY=branch_locked_10m`
+        - models a more human Layer 1 route: sample newly unlocked gyms once, then finish bodyweight, then lifting, then yoga
+    Added policy-specific latest report outputs:
+        - `test-results/content-completion-human_10m-latest.json`
+        - `test-results/content-completion-branch_locked_10m-latest.json`
+    Completed authoritative comparison runs for both policies:
+        - mixed `human_10m`: branch interleaving still bunches branch-finish times together (`132h 30m` lifting, `133h 20m` bodyweight, `135h 10m` yoga; `135h 10m` all non-repeatable)
+        - branch-locked `branch_locked_10m`: one lifting sample on unlock, one yoga sample on unlock, then bodyweight -> lifting -> yoga completion (`89h 10m` bodyweight, `116h 10m` lifting, `136h 0m` yoga; `136h 0m` all non-repeatable)
+    First-run timing comparison under the two policies:
+        - both policies keep Layer 0 at `8h 10m`
+        - mixed first lifting / yoga: `4h 40m` / `4h 20m`
+        - branch-locked first lifting / yoga: `6h 0m` / `8h 10m`
+    The remaining pacing gaps are unchanged in kind:
+        - branch completion spread still exceeds `2h`
+        - the global shop still empties well before full completion
+        - some Yoga runs still miss the `75%` Flow-cap heuristic before prestige
+
+v.60 - 3/7/2026
+
+    Set `human_10m` as the default authoritative content-sim policy in `scripts/content-completion-sim.cjs`
+    Completed a resumed checkpointed full-content timing run under the default `human_10m` policy:
+        - final report written to `test-results/content-completion-latest.json`
+        - temporary checkpoint cleared automatically after completion
+    Latest authoritative `human_10m` timing highlights:
+        - Layer 0 first prestige: `8h 10m`
+        - Layer 1 first three bodyweight runs: `8h 40m`, `7h 0m`, `5h 40m`
+        - first lifting run: `4h 40m`
+        - first yoga run: `4h 20m`
+        - full non-repeatable content completion: `135h 10m`
+    Current pacing gaps surfaced by the authoritative run:
+        - branch completion spread is still `2h 40m`
+        - the global shop still empties about `3h 40m` before full completion
+        - some Yoga runs still land below the `75%` Flow-cap heuristic by prestige
+
+v.59 - 3/7/2026
+
+    Added authoritative checkpoint/resume support to the full content simulator:
+        - `scripts/content-completion-sim.cjs` now writes `test-results/checkpoints/content-completion-checkpoint-latest.json`
+        - interrupted content sims resume from the last saved checkpoint instead of restarting from a fresh save
+        - checkpoints are invalidated automatically when the content-sim fingerprint changes (`js/app.js`, `js/stats.js`, `js/random.js`, `js/clock.js`, `js/test-hooks.js`, or the sim script itself)
+    Added configurable human-check-in policies for content timing runs:
+        - `CONTENT_SIM_POLICY=active_5m`
+        - `CONTENT_SIM_POLICY=human_10m`
+        - `CONTENT_SIM_POLICY=human_15m`
+        - checkpoint cadence is configurable via `CONTENT_SIM_CHECKPOINT_EVERY_SECONDS`
+    Added load-time offline-skip support for simulator checkpoint restores so resumed runs do not get phantom offline progress
+    Extended deterministic RNG state support with `getState` / `setState` so resumed sims keep the same random stream
+    Validated checkpoint resume behavior with forced checkpoint exits:
+        - first partial run saved at `0h 30m`
+        - resumed run continued to `1h 0m` instead of restarting
+    Re-ran the full Playwright suite after the simulator/runtime changes (`74/74` passing)
+
+v.58 - 3/7/2026
+
+    Tightened Yoga Flow timing with a narrower, run-depth-based reward tune:
+        - fresh Yoga keeps the existing cadence but now reaches the Flow cap before prestige instead of after it
+        - half/max Yoga runs still cap before prestige without changing the shared Layer 1 pacing curve
+    Added a fresh-run closing-route bonus so early Yoga unlocks stop landing just short of `1.00` Flow:
+        - the bonus only applies on later route completions in early Yoga progression
+        - early Flow upgrade snowball behavior stays mostly unchanged
+    Trimmed the late Yoga branch cost tail to help branch-end alignment:
+        - `Recovery Protocol`: `20 -> 19`
+        - `Quiet Studio`: `22 -> 20`
+    Re-ran Yoga scenario validation:
+        - fresh Yoga: `3h 0m` prestige / `2h 20m` Flow cap
+        - half Yoga: `1h 5m` prestige / `0h 55m` Flow cap
+        - max Yoga: `0h 45m` prestige / `0h 35m` Flow cap
+    Re-ran targeted Yoga regression coverage and the full Playwright suite:
+        - `tests/yoga-flow.spec.ts` passing
+        - full suite passing (`74/74`)
+
+v.57 - 3/7/2026
+
+    Retuned the shared Layer 1 pacing curve for the current slower-target plan:
+        - bodyweight/lifting/yoga profile coefficients adjusted
+        - local run warm-up weights smoothed
+        - cross-gym acceleration warm-up reduced for earlier branch runs
+        - late-run penalty softened so the pacing curve stays monotonic while still damping ultra-short loops
+    Aligned `scripts/economy-projection.cjs` benchmark windows with the active Layer 1 pacing target:
+        - Layer 0 first prestige: `7-9h`
+        - Layer 1 run 1 / 2 / 3: `7-9h`, `5-7h`, `4-6h`
+    Added four new late non-repeatable global upgrades:
+        - `Trainer Cartel`
+        - `Class Assembly Line`
+        - `Campaign Syndicate`
+        - `Recovery Reserve`
+    Added regression coverage validating late global upgrades `27/28/30/34/35/36/37/38/39` mutate the intended Layer 1/global runtime fields and do not touch Layer 0 research/view loops
+    Retuned the late global cost ladder so the global prestige shop remains relevant through end-of-content:
+        - `Peak Marketing Stack` -> `84`
+        - `Franchise Bookkeeping` -> `94`
+        - `Trainer Cartel` -> `106`
+        - `Class Assembly Line` -> `118`
+        - `Campaign Syndicate` -> `132`
+        - `Recovery Reserve` -> `148`
+    Retuned fresh-yoga Flow timing after the slower Layer 1 pacing pass:
+        - fresh Yoga now reaches roughly `0.95` Flow by prestige in the scenario harness
+        - half/max Yoga still reach Flow cap before prestige
+    Regenerated simulation outputs:
+        - `test-results/economy-projection-latest.json`
+        - `test-results/yoga-flow-scenarios-latest.json`
+        - `test-results/content-completion-latest.json`
+    Latest economy projection now lands at:
+        - Layer 0 first prestige: `7h 45m`
+        - Layer 1 run 1: `7h 0m`
+        - Layer 1 run 2: `5h 30m`
+        - Layer 1 run 3: `4h 25m`
+    Latest content-completion simulation now clears the late global shop exhaustion gap; residual pacing notes remain:
+        - branch completion spread is still slightly above the `2h` heuristic
+        - some Yoga runs under full-content policy still finish below `75%` of Flow cap by prestige
+    Re-ran full Playwright suite after the retune (`74/74` passing)
+
+v.56 - 2/28/2026
+
+    Added cross-gym energy bar readability polish:
+        - dedicated always-visible energy value overlay (`current/max`)
+        - progress-fill text no longer disappears at low energy widths
+    Updated non-yoga exercise resting behavior so bodyweight/lifting loops fully pause while resting and only resume after a full energy refill
+    Reduced UI overhead from energy-only refresh loop (50ms cadence) while keeping direct runtime-triggered energy renders in place
+    Retuned Layer 1 pacing warm-up logic:
+        - staged local-run ramp weights (run 2 / run 3 no longer spike as sharply)
+        - staged cross-gym acceleration weight (freshly unlocked gyms no longer receive full global run acceleration immediately)
+    Retuned lifting/yoga Layer 1 profile coefficients to better match gradual acceleration goals and new-gym first-run pacing
+    Retuned yoga route draft/system pacing:
+        - route risk profiles adjusted (progress/reward/drift/pressure)
+        - breath progress and per-cycle Flow reward curves increased
+        - depth bonus softened to avoid late-run runaway
+    Updated yoga scenario harness fresh-unlock baseline to represent realistic first-yoga availability (normal prior progression, no deep stockpiling)
+    Yoga route UX/copy cleanup:
+        - renamed panel title from `Yoga Route Draft` -> `Yoga Route`
+        - removed the extra `Flow Points` line from the route panel
+        - simplified route hint copy so it no longer references Flow-shop purchasing behavior
+    Updated `Route Automation` upgrade behavior and copy:
+        - removed automatic Flow-shop purchasing from automation logic
+        - now only auto-picks routes and auto-stabilizes risky states (matching upgrade text)
+    Fixed Flow repeatable affordance:
+        - affordable Flow repeatable buttons now use a clear active state color (not dark/disabled-like)
+        - disabled state now uses explicit `disabled` property toggling for clearer UX
+        - Flow shop refresh now updates Flow repeatable affordability in real time
+    Added late-game global sink depth:
+        - new global repeatables `Recovery Grid` (+energy recovery scaling) and `Market Engine` (+gym economy scaling)
+        - new late non-repeatable global upgrades `34` and `35` to extend end-of-content global progression
+    Added additional late-run acceleration containment:
+        - stronger global action-speed softcap on mastery multiplier stack
+        - extra high-run damping in Layer 1 pacing multiplier to reduce runaway late collapse
+    Regenerated pacing reports after retune:
+        - `test-results/economy-projection-latest.json`
+        - `test-results/content-completion-latest.json`
+        - `test-results/yoga-flow-scenarios-latest.json`
+    Re-ran full Playwright suite after changes (`74/74` passing)
+
+v.55 - 2/28/2026
+
+    Fixed high-debug-speed yoga energy/runtime drift by switching yoga continuous ticks to elapsed-time stepping, preventing `60x+` runs from showing inverted energy behavior
+    Fixed debug speed-switch sync (`high speed -> 1x`) by resynchronizing rendered energy state immediately on runtime interval restart
+    Added deterministic Playwright regression coverage for debug-speed yoga sync when switching from `60x` back to `1x`
+    Tightened yoga route-draft variance bands (progress/reward/drift/pressure rolls) to reduce run-to-run pacing volatility
+    Added second-stage diminishing-returns softcaps for Flow, Confidence, and Leadership effective-point scaling at high stacks
+    Updated confidence/leadership/flow tooltips to disclose primary + stronger secondary softcap thresholds
+    Re-ran meta softcap stress harness and verified bounded multiplier output under extreme stacked meta points with zero assertions/runtime errors
+    Retuned Layer 1 pacing profiles with Yoga included to raise early-run baseline and preserve gradual acceleration (targeting ~8h first bodyweight-layer run window)
+    Re-ran consolidated pacing simulation set:
+        - `profile:lifting-scenarios` (fresh/half/max lifting)
+        - `profile:yoga-scenarios` (fresh/half/max yoga)
+        - `profile:content` (wait-full-meta, repeatables-last full-content completion policy)
+    Latest full-content projection now lands around `99h 10m` with:
+        - Layer 0 first prestige: `7h 55m`
+        - Layer 1 run 1: `7h 35m`
+        - Layer 1 run 2: `3h 35m`
+        - Layer 1 run 3: `3h 10m`
+    Re-ran full Playwright suite after tuning (`72/72` passing)
+
+v.54 - 2/21/2026
+
+    Completed Yoga Option A foundation: yoga gyms are now unlockable via global upgrade id 33 with full save/load/reset support and dedicated yoga prestige/Flow shop wiring
+    Implemented full yoga workout loop progression (6 exercises with tier advancement, yoga-specific workout upgrades, and start/stop/runtime UI refresh paths)
+    Added yoga breathing-cycle minigame core (Inhale/Hold/Exhale/Hold phases, anchor timing quality, cycle rewards, perfect-anchor tracking, and Flow generation)
+    Added yoga automation ladder/toggles (autobuy yoga workout/gym/ad upgrades + Breath Cycle automation with auto-anchoring and Flow-shop autobuy behavior)
+    Added yoga capstones for cross-gym benefit and long-tail premium generation (`Recovery Protocol` energy recovery bonus + `Quiet Studio` passive Flow drip)
+    Added Flow offline parity: passive Flow and yoga automation now run during offline catch-up, and offline summary alerts include Flow gains
+    Fixed layer-1 gym profile mapping so active yoga runs resolve against the yoga pacing profile (`gymType:2`) instead of cardio
+    Added dedicated yoga pacing harness (`scripts/yoga-flow-scenarios.cjs`) + npm script (`profile:yoga-scenarios`) for fresh/mid/max yoga-state timing checks
+    Fixed a regression where Yoga Breath cycle progression did not advance during active 1-second runtime ticks
+    Fixed Breath automation to stop force-anchoring at zero progress (now only auto-buys Flow upgrades; phase anchoring remains tied to cycle-progress logic)
+    Tuned Yoga breath-cycle pacing for Option A pass: reduced per-phase targets (`20/14/20/14`), increased progress scaling (`0.54 + log10(reps+1) * 0.20`), and increased cycle reward baseline (`0.08 + quality * 0.095`)
+    Tuned Flow shop pacing costs to better align with prestige-end timing in mid/max yoga runs (`Sequence Memory` 2 Flow, `Quiet Mind` 3 Flow)
+    Captured yoga pacing projection report (`test-results/yoga-flow-scenarios-latest.json`) showing fresh unlock intentionally slower, mid near parity, and max close-to-parity completion
+    Updated yoga fresh-unlock pacing scenario assumptions to avoid pre-stockpiled global upgrades (fresh profile now starts from first yoga-unlock baseline with unlock-only global purchases)
+    Fixed yoga upgrade modal visibility fallback so the yoga upgrade button is shown when actively in a yoga run (including debug-unlock paths)
+    Extended debug force-unlock/prestige-jump wiring for yoga upgrade arrays and flow-shop button state refresh
+    Fixed yoga prestige reset integrity so new yoga runs no longer inherit prior yoga exercise totals/tiers/minigame progress
+    Converted yoga workout bars to smooth continuous filling with continuous energy drain instead of chunked rep jumps
+    Retuned yoga energy scaling: yoga tier energy growth now uses a softer multiplier and Precision Form upgrades now apply +50% energy (while keeping double stat gains)
+    Reworked yoga minigame into Pose Stability sessions (focus-track stabilization loop) with gym-appropriate tab labeling (`Yoga Flow`) and automation copy updates
+    Added a baseline active-session Flow cap of `1.00` per run for yoga, with UI hinting when the run cap is reached
+    Added yoga/flow repeatable sinks: `Studio Capacity` (yoga points) and `Resonance Stack` (Flow), with gated unlock requirements and escalating costs
+    Expanded Flow from yoga-only pacing into cross-gym effects (action speed + max energy + energy recovery), including tooltip breakdowns of live per-point and total bonuses
+    Added deterministic Playwright regression coverage for yoga new-run resets and reran full test suite (64/64 passing)
+    Fixed yoga resting bug where yoga actions could continue draining energy while resting; yoga drain now pauses during rest and resumes after a safe threshold
+    Rebalanced Flow scaling to prevent runaway power: reduced baseline per-point bonus, lowered Flow-shop additive bonus, softened Flow-repeatable effect scaling, and added diminishing returns for effective Flow after a softcap
+    Reworked yoga minigame loop away from session-style milestones into a continuous stability board that grants Flow from sustained quality over time
+    Updated yoga minigame UI/copy to remove session/competition framing (`Current Stability`, `Corrections Applied`, `Steady Time`) and show run-cap fill directly
+    Added deterministic Playwright coverage for yoga rest/resume energy behavior and Flow diminishing-returns bounds; reran full suite (66/66 passing)
+    Fixed yoga energy pacing/runtime bugs by moving yoga exercises to a shared continuous tick with fair per-tick energy distribution across all active yoga exercises
+    Corrected yoga continuous-drain math to match bar-fill timing (`max / increase` cycle depth) so yoga energy spend/recovery behavior aligns with expected progression speed
+    Fixed interval lifecycle integrity by clearing yoga timers on load/reset/debug restarts and preventing one stopped yoga exercise from halting the rest
+    Updated energy refresh ordering so max-energy recalculates before UI rendering, clamps current-to-max safely, and avoids stale energy bar values
+    Added deterministic Playwright regression coverage for shared yoga rest-resume behavior and per-exercise stop isolation; reran full suite (68/68 passing)
+    Updated yoga resting behavior to match base game semantics: once resting starts, yoga resumes only after energy is fully refilled to max
+    Added workout completion pulse rendering so yoga bars visibly hit 100% at cycle completion before overflow carry appears in the next bar
+    Expanded yoga regression coverage for full-refill rest gating and completion-bar pulse behavior; reran full suite (69/69 passing)
+
+    Added a dedicated lifting-academy 3-scenario simulator (`fresh unlock`, `half content`, `max content`) with timestamped JSON report output (`lifting-academy-scenarios-*.json`)
+    Updated the lifting-academy scenario policy to simulate engaged check-ins that buy academy upgrades, allocate camp points, and purchase camp expansion after core upgrades
+    Added academy progression-depth scaling (`getAcademyExperienceProgressMultiplier`) so early lifting runs progress seasons slower and later lifting runs accelerate naturally
+    Retuned academy progression-depth constants to align season-cap timing near prestige timing across all three target lifting scenarios
+    Added Playwright regression coverage validating academy experience multiplier scaling across fresh/mid/max lifting progression states
+    Added npm script `profile:lifting-scenarios` for repeatable local academy timing calibration runs
+
+    Added passive academy credit generation per second while in lifting academy runs to smooth progression between meet completions
+    Added passive academy credit rate display in the competitions tab (`Passive credits: .../s`)
+    Reworked academy auto-allocation logic to prioritize the lowest camp track with rotating tie-breakers, preventing skewed stat stacks over incremental point gains
+    Applied additional academy pacing retune (lower phase targets + slightly stronger progress scaling) to push maxed runs from ~7-8 seasons closer to prestige-end alignment
+    Added Playwright coverage for passive academy credit generation and lowest-track rotational camp auto-allocation behavior
+    Rebalanced `Camp Expansion` repeatable costs to arrive earlier in lifting runs (lower base/growth/curve) so expansion levels can progress beyond 1-2 before prestige
+    Updated academy automation to start buying `Camp Expansion` once core progress upgrades are online (instead of waiting for every academy upgrade)
+    Fixed incremental auto-allocation fairness by rotating newly gained camp points across Strength/Technique/Recovery/Promotion rather than repeatedly assigning the same stat
+    Added Playwright coverage for rotational auto-allocation behavior when camp points are gained one at a time
+    Added repeatable academy `Camp Expansion` purchase (academy credits) that grants +1 permanent training-camp point per level with escalating cost
+    Added `Camp Expansion` UI in lifting academy showing current level and next cost, with affordability-based button state
+    Wired academy automation to buy `Camp Expansion` after core academy upgrades are complete, then immediately auto-allocate new camp points
+    Added Playwright coverage validating camp expansion purchase effects (+1 total/unspent camp point, credit spend, escalating next cost)
+    Retuned lifting academy season throughput to close the gap with prestige-end timing on max-upgrade runs (lower phase targets + faster progress scaling)
+    Repurposed `Sponsor Liaison` to boost academy season progress from total stats instead of adding extra leadership rewards
+    Increased season-progression impact from `Programming Board`, camp Strength allocation, and `Meet Intensity` to reduce low-season run endings (e.g., 1-2 seasons)
+    Retuned academy season pacing again to reduce overlong lifting runs: lowered per-phase targets, softened late-season ramp, and increased base season-progress scaling
+    Increased academy progression multipliers from camp strength, `Programming Board`, and `Meet Intensity` to bring season-10 completion closer to lifting prestige timing
+    Reworked lifting academy pacing around a capped 10-season arc with a steeper late-season target ramp and adjusted season-progress tuning
+    Added a hard season cap at 10 completed seasons; academy progression now stops rewarding beyond cap and displays capped state in UI
+    Updated `Judge Whisperer` to grant +4 academy training-camp allocation points (persistent leadership-shop benefit)
+    Aligned training-camp `-` / `+` controls in a fixed grid layout for cleaner scanning and faster point assignment
+    Improved academy-upgrade clarity by labeling purchased upgrades directly on the button (`(Purchased)`)
+    Updated academy automation purchase checks to respect technique-adjusted effective costs
+    Added Playwright coverage for season-cap reward cutoff and `Judge Whisperer` camp-point behavior (`tests/lifting-academy.spec.ts`)
+    Removed `(Run Only)` label from academy upgrades header and added training-camp tooltips for Strength/Technique/Recovery/Promotion
+    Fixed academy upgrade purchase reliability by making academy upgrade rows persistent (no full list rebuild every refresh tick) and adding explicit button disabled-state handling
+    Added Playwright regression coverage validating that affordable academy upgrade buttons are clickable and spend academy credits
+    Removed remaining conference button/text UI from the lifting academy tab and hid legacy-conversion explanatory copy
+    Added a one-time per-run starter academy credit grant when unlocking `Lifting Academy` so players can buy early academy upgrades immediately
+    Simplified academy upgrade descriptions to avoid duplicate inline cost text
+    Replaced lifting competitions/conferences gameplay loop with academy seasons (Base -> Build -> Peak -> Meet) and training-camp allocation
+    Added run-scoped academy credits, academy upgrades, and meet reward payouts (credits + leadership)
+    Repurposed lifting 15-point automation upgrade into academy automation (auto camp allocation + academy upgrade buying)
+    Added one-time save migration that converts legacy competition/conference progress into starting academy credits and prevents double grants
+    Updated lifting upgrade copy to reflect academy-based progression and leadership sources
+    Added Playwright coverage for academy migration, season rewards, and automation behavior (`tests/lifting-academy.spec.ts`)
+    Updated offline meta-currency coverage to validate academy-based leadership gain path instead of conference autobuy path
+    Updated Confidence/Leadership stat tooltips to show live per-point boost and total multiplier values as upgrades/repeatables are purchased
+    Added point-type labels in repeatable sections (Global/Bodyweight/Lifting/Confidence/Leadership Points) and scope-specific repeatable button colors
+    Simplified repeatable upgrade copy by removing redundant "repeatable ... sink" wording
+    Added Playwright coverage validating meta-shop effects in non-lifting/non-bodyweight gym contexts and tooltip/heading/button-style updates
+    Added high-cost repeatable mastery sinks for global/bodyweight/lifting prestige pools (`Franchise Tempo`, `Street Tempo`, `Rep Reclamation`)
+    Wired mastery repeaters into live runtime formulas: action-speed scaling now stacks bodyweight + global repeatables, and overflow retention scales with lifting repeatables
+    Enforced repeatable-upgrade unlock requirements so capstone-gated repeaters cannot be purchased early
+    Updated repeating-upgrade Playwright coverage for new global/bodyweight/lifting definitions, UI unlock gating, and measurable mastery-effect gains
+    Retargeted global upgrade 27 from Layer 0 influencer followers to Layer 1 advertising ad-growth speed (`Referral Bootcamp`)
+    Expanded global layer-targeting regression coverage to include upgrades 27/28/30
+    Added one-point confidence/leadership minigame bridge upgrades: `Rival Film Room` (+50% confidence from gang absorptions) and `Judge Replay Booth` (+50% leadership from world conferences)
+    Added repeatable confidence/leadership sinks (`Sharp Focus`, `Command Stack`) with scaling costs and persistent levels to absorb long-tail meta currency
+    Wired repeatable sink effects into confidence/leadership per-point effectiveness and updated repeatable UI refresh for the confidence/leadership shop panels
+    Updated economy/content simulation autobuy passes to include repeatable upgrades across global/bodyweight/lifting/confidence/leadership scopes
+    Rebalanced confidence/leadership shop cost ladders from low fractional values to steeper sinks (`1/2/3/5` each) so meta currencies have a longer spend arc
+    Increased confidence/leadership shop effect strength so spending remains competitive versus holding raw `+2% per point` multipliers
+    Updated meta-shop regression expectations and reran full Playwright suite after the sink/value rebalance
+    Regenerated economy projection report after confidence/leadership sink tuning (`economy-projection-latest.json`)
+    Added new confidence/leadership prestige shops with dedicated point sinks and four upgrades each (bodyweight confidence shop + lifting leadership shop)
+    Wired confidence-shop effects into confidence scaling, member recruitment, training/class throughput, and gang growth
+    Wired leadership-shop effects into leadership scaling, competition gains, influence/campaign growth, and member money scaling
+    Added Playwright coverage for meta-shop rendering, purchases, and formula impact (`tests/meta-shops.spec.ts`)
+    Fixed deterministic startup bootstrapping by replacing jQuery-ready timer dependency with DOMContentLoaded/immediate bootstrap flow
+    Retuned lifting Layer 1 acceleration profile (`base=0.18`, `scale=0.08`, `cap=0.98`) to keep 5-minute-checkin projection pacing inside target windows after meta-shop additions
+    Regenerated economy projection (`test-results/economy-projection-latest.json`) with all benchmarks passing (`7h45m`, `4h00m`, `3h10m`, `2h45m`)
+    Tuned simulation defaults to a human-active cadence: 5-minute check-ins for active-policy profiling
+    Updated long-sim active policy from 5-second check-ins to 5-minute check-ins for realistic baseline timing
+    Tightened prestige-ready meta hold windows in economy/content simulations (45m max hold, 15m stall timeout) to avoid overly long waits
+    Regenerated economy/content/long-sim profiling reports under the updated human-active policy defaults
+    Added six late global prestige upgrades (ids 27-32) to extend Layer 1 global shop progression through end-of-content pacing
+    Implemented new late global upgrade effects for influencer growth, research gain, gym recruitment, view money, nutritionist scaling, and manager scaling
+    Tuned Layer 1 gym acceleration profiles toward human-active timing targets (`~4h` first Layer 1 run, then `~3h`, then `~2-3h`)
+    Fixed global upgrade id 29 to mutate `gym.members.growth` (valid field) instead of nonexistent `gym.members.increase`
+    Added Playwright regression coverage for global upgrade id 29 to prevent invalid `gym.members` field mutations
+    Regenerated economy/content/long-sim reports after Layer 1 + global shop overhaul (`economy-projection-latest.json`, `content-completion-latest.json`, `long-sim-profile-latest.json`)
+    Retargeted global upgrade 28 (`Lab Rat Army`) from Layer 0 research gain to Layer 1 advertising influence growth
+    Retargeted global upgrade 30 (`Sponsorship Scam`) from Layer 0 view income to Layer 1 gym money growth
+    Added Playwright regression coverage to enforce that global upgrades 28/30 affect Layer 1 systems and do not mutate Layer 0-only rates
+    Added final bodyweight/lifting prestige capstone upgrades that each grant a permanent +0.05 Layer 1 progression modifier bonus
+    Updated Layer 1 modifier UI copy to indicate gym capstones contribute to progression scaling
+    Added Playwright coverage validating capstone upgrades cumulatively increase Layer 1 progression modifier (+0.05 each)
+    Regenerated economy projection after capstone modifier changes (`economy-projection-latest.json`) with target windows still passing
+    Locked capstone policy to Option C for all gym types: flat permanent `+0.05` progression modifier per gym capstone (target `+0.20` at four gyms)
+    Implemented bodyweight mastery QoL perk (`Street Legend`) as a cross-gym global action-speed bonus (`+8%`) via shared timer scaling
+    Implemented lifting mastery QoL perk (`Meet Legend`) as cross-gym overflow retention (`25%`) for gym bars and lifting reps-to-next progression
+    Added Playwright mastery QoL coverage (`tests/gym-mastery-qol.spec.ts`) validating cross-gym timer-speed and overflow-retention behavior
+    Added bodyweight/lifting final passive meta upgrades: `Neighborhood Mentors` (confidence drip) and `Veteran Speakers` (leadership drip)
+    Wired passive confidence/leadership generation into both live 1-second ticks and offline progress simulation
+    Added Playwright passive-meta coverage (`tests/passive-meta-generation.spec.ts`) for per-second rates and offline gain application
+    Tuned passive meta capstone rates to `0.000015/s` and lowered their costs to `22` points each for smoother completion pacing
+    Stretched late global upgrade costs (ids `27-32`) to `24/30/36/42/48/54` to preserve global sink headroom before yoga/cardio rollout
+    Hid the Layer 1 progression-multiplier stats row from player-facing UI while preserving the backend pacing formula
+    Updated bodyweight/lifting capstone upgrade copy to remove raw `+0.05` math language in favor of qualitative momentum phrasing
+    Extended offline progression parity for meta currencies: confidence can advance via offline gang auto-absorb and leadership via offline conference autobuyer; offline summary now reports confidence/leadership gains
+    Regenerated economy/content profiling after mastery QoL implementation (`economy-projection-latest.json`, `content-completion-latest.json`)
+    Phase 1 foundation start: initialized local Node tooling with a new package.json
+    Added baseline npm scripts for test, lint, and format
+    Removed auto-injected GitHub metadata from package.json to keep local-only workflow
+    Added Playwright as a local dev dependency and installed browser binaries
+    Added Playwright config and local static test server for deterministic local test startup
+    Added first Playwright smoke test to validate page load and detect console/page errors
+    Added deterministic clock provider with manual step API and query-param deterministic mode toggle
+    Added Playwright deterministic clock test validating manual timer stepping behavior
+    Added seeded RNG service with deterministic toggle and URL seed support
+    Added Playwright seeded RNG reproducibility test
+    Added `window.__gainzTest` hooks for deterministic stepping, fast-forward, setNow, and state snapshot/restore
+    Added documentation for test hooks and Playwright coverage for hook behavior
+    Added save schema wrapper with `saveVersion` and timestamp metadata while preserving legacy payload loading
+    Added Playwright coverage verifying new save metadata fields
+    Added versioned save migration runner that upgrades legacy array saves to schema version 1
+    Added Playwright migration test validating legacy-array to versioned-save conversion
+    Added save corruption fallback that backs up malformed saves and safely clears active save data
+    Added in-game recovery warning alert and Playwright coverage for corrupt-save recovery flow
+    Added offline progress simulation from save-time differential (capped to 8 hours) and silent post-load save consumption
+    Added Playwright offline-progress validation test
+    Added offline summary alert with duration and gain breakdown after offline simulation
+    Added Playwright validation for offline summary visibility and content
+    Removed hacktimer dependency and introduced visibility-based background catchup handling
+    Added Playwright coverage for no-hacktimer background catchup path
+    Added invalid-state assertion logging (`window.__gainzAssertLog`) with NaN/Infinity/negative clamps
+    Added Playwright assertion-guard coverage validating logging and safe value recovery
+    Added hidden debug panel scaffold in Options tab, enabled only by non-default debug flag (`?debug=1`)
+    Extended smoke Playwright coverage to validate debug panel default-hidden and flag-enabled behavior
+    Added debug speed controls (1x/5x/20x) with timer rescaling and runtime timer restart handling
+    Added debug progression skip action to fast-track core progression resources and prestige readiness
+    Added Playwright coverage for debug speed multiplier behavior and debug progression skip behavior
+    Added debug force unlock action to expose gated systems and activate upgrade visibility flags
+    Added debug prestige jump action with deterministic 5-cycle point application by active layer
+    Extended Playwright debug suite with force-unlock and prestige-jump validation
+    Fixed Layer 0 debug-speed restarts to correctly resume all unlocked exercises (rows/dips/pullups/squats/rdl) instead of only pushups
+    Added Playwright regression coverage for Layer 0 unlocked exercise continuity after debug-speed runtime restart
+    Added long-sim profiling harness script (`npm run profile:long-sim`) with deterministic 8h/24h offline simulation metrics
+    Added JSON long-sim report output to `test-results/long-sim-profile-latest.json` and timestamped snapshots
+    Extended long-sim profiling with an active policy (continuous upgrade buying + coffee/payday usage)
+    Added semi-active policy profiling with deterministic 15-30 minute check-in cadence
+    Added first-prestige timing output for active and semi-active policy runs in long-sim profile report
+    Added golden checkpoint harness script (`npm run profile:golden`) with 8 deterministic Layer 0 checkpoints
+    Added golden baseline snapshot file at `tests/golden/layer0-checkpoints.json` and update command (`npm run profile:golden:update`)
+    Added strict checkpoint comparison with numeric tolerance and assertion-count parity checks
+    Added a library-agnostic numeric wrapper (`js/number.js`) with Decimal-ready API (`add/sub/mul/div/pow/log10/min/max/format`)
+    Routed core runtime math calls in `js/app.js` through the wrapper backend (`window.gainzMath`) with safe fallback behavior
+    Added `break_infinity.js` runtime support (`js/break_infinity.min.js`) and automatic Decimal-backed backend selection in the numeric wrapper
+    Migrated core currency/stat mutation paths (money, stats, followers/views/research, gym and competition growth hot paths) to wrapper arithmetic methods to reduce Number-overflow risk
+    Added reusable softcap utility in runtime math flow
+    Replaced hard `1e200` campaign-growth clamping with softcap behavior for the gym campaign-growth subsystem
+    Added Playwright coverage validating softcap utility behavior and campaign formula output beyond the previous hard cap
+    Added canonical modifier pipeline utility with explicit stack order: base -> additive -> multiplicative -> exponential -> global -> layer
+    Added shared modifier helpers for global/all-stat, leadership, confidence, and gym manager/nutritionist/class multipliers
+    Migrated core exercise gain formulas to the ordered modifier pipeline
+    Migrated core gym economy formulas (money, members, campaign/ad growth, competition chain gains) to the ordered modifier pipeline
+    Added Playwright coverage for modifier ordering and pipeline parity on exercise + gym formula outputs
+    Added repeating upgrade schema definitions and evaluator utilities (cost + effect) with deterministic level normalization
+    Added repeating-upgrade state container on `stats` and exported repeating-upgrade helper API (`window.__gainzRepeatingUpgrades`)
+    Added Playwright coverage validating repeating-upgrade cost/effect evaluation and state initialization
+    Added repeatable-upgrade UI rendering in prestige modals with live level/cost/effect display and purchase-state button classes
+    Added repeatable-upgrade purchase handler with prestige-point spending and persistent level tracking
+    Integrated first repeatable global upgrade effect into money-per-second generation
+    Added Playwright UI coverage validating repeatable-upgrade rendering and purchase flow
+    Implemented run-based global prestige formula with fractional payout support and deterministic 2-decimal flooring
+    Added per-run tracker fields (run seconds, money/follower/research/influence earned) and wired tracker updates into live + offline progression loops
+    Updated prestige preview/owned point displays to show fractional values consistently
+    Switched global prestige award in gym reset flow to formula-driven payout and preserved repeating-upgrade levels across prestige reset
+    Added Playwright coverage for formula parity and run-tracker progression behavior
+    Replaced bodyweight prestige preview/award logic with formula-based gain scaling by gang power, total bodyweight reps, run money, and run duration
+    Kept pre-bodyweight (`gymType=-1`) bodyweight prestige gain behavior stable for first-transition compatibility
+    Added Playwright coverage validating bodyweight prestige gain scales with stronger gang + longer progression state
+    Replaced lifting prestige preview/award logic with formula-based gain scaling by competition chain progress, total lifting reps, total lifted weight, run money, and run duration
+    Added Playwright coverage validating lifting prestige gain scales upward with deeper competition chain progress
+    Added centralized prestige-point precision normalization (4-decimal internal, 2-decimal display) with stable affordability checks
+    Updated prestige spend/award/save-load paths to preserve fractional precision without drift artifacts
+    Added Playwright coverage validating fractional prestige precision in display and save/load roundtrip
+    Added Layer 2 prestige scaffold state (`prestige.layer2`) with safe initialization and sanitization for legacy saves
+    Added Layer 2 preview formula estimate derived from Layer 1 points spent, mastery, total prestiges, and run duration
+    Surfaced Layer 2 preview values in the Open Gym prestige panel (current + on-reset estimate)
+    Added Playwright coverage validating Layer 2 preview estimate scales with stronger Layer 1 progression
+    Rebalanced early Layer 0 pacing by moving the Open Gym unlock research cost to `1e29` so first prestige lands near the 8-hour target window under active policy
+    Rebalanced early Layer 1 pacing by increasing baseline gym progression coefficients (member growth, training/class throughput, money growth, ad growth, ad multiplier, and influence growth)
+    Updated deterministic profile targets: first prestige active timing is now about `7h 54m`, and first bodyweight-layer prestige under active policy is about `4h 44m`
+    Added Layer 1 run-speed pacing acceleration that scales with completed Layer 1 runs and caps to avoid runaway late-run trivialization
+    Added long-idle prestige bonus term for bodyweight and lifting prestige formulas so longer runs award higher absolute gains with diminishing returns
+    Integrated Layer 1 pacing multiplier into exercise, gang, gym, and competition gain paths to target `4-5h -> 2-3h -> 1-2h` progression trend
+    Added deterministic economy projection harness (`npm run profile:economy`) producing benchmarked Layer 0/Layer 1 timing reports
+    Added benchmark gating for projection windows (Layer 0 `7-9h`; Layer 1 run1 `4-5h`; run2 `2-3h`; run3 `1-2h`) with non-zero exit on failure
+    Added projection report outputs at `test-results/economy-projection-latest.json` and timestamped snapshots
+    Expanded invalid-state sanitization with overflow clamps and strict deep economy-state scanning for stress validation contexts
+    Added strict safeguard regression coverage (`tests/economy-safeguards.spec.ts`) to verify finite, non-negative economy resources under deterministic stress simulation
+    Extended assertion guard coverage to nested economy fields (gang rivals + lifting competition chain state)
+    Fixed `jobUpgradeClick` case 18 using invalid `job.allStatBoost` target; it now applies to `stats.allStatBoost` and avoids `NaN` assertion hits in long projection runs
+    Added Layer 1 cross-gym acceleration budget config for bodyweight/lifting/cardio/yoga pacing identities with gym-specific run scaling, caps, and long-idle scales
+    Added read-only budget test hook surface at `window.__gainzEconomyBudget`
+    Added cross-gym acceleration budget documentation at `ECONOMY_ACCELERATION_BUDGET.md`
+    Extended prestige formula coverage with a cross-gym acceleration identity test and updated lifting idle-scale expectation
+    Extended economy projection reports with safeguard checks requiring zero invalid-state assertions and zero runtime errors
+    Restored legacy prestige point progression baseline for comparison runs (`global/bw/lifting` gains now follow `total + 1`)
+    Restored Layer 0 and Layer 1 Open Gym unlock costs to baseline values (`25000` research / `25000` influence)
+    Removed active repeatable global prestige upgrade definition from the prestige shop baseline pass
+    Hid Layer 2 prestige preview rows in Open Gym UI (no early Layer 2 point visibility)
+    Updated offline progress summary alerts to be non-stacking and auto-dismiss after ~9 seconds
+    Normalized scientific notation formatting to remove `e+` display style (now `e`)
+    Expanded hidden debug speed presets to include `250x`, `500x`, and `1000x` with safe clamping at `1000x`
+    Decoupled high-frequency UI refresh from debug speed scaling (fixed 50ms refresh cadence) to prevent debug-speed self-throttling at high multipliers
+    Added live measured debug effective-speed readout in the debug panel (`Effective: X.x`) for local speed verification
+    Fixed lifting gym workout-upgrade case 12 to correctly double deadlift stat fields (`lifting.dls.*`) instead of mutating nonexistent aggregate lifting fields
+    Added dedicated Playwright regression coverage for lifting upgrade id 12 to prevent invalid aggregate lifting-field mutations
+    Regenerated active-policy economy projection and full-content completion baseline reports after BUG-002 fix (assertion-free content simulation run)
+    Rebalanced pacing pass 1: added Layer 0 progression pacing factor for pre-prestige formulas and retuned Layer 1 gym pacing profiles with lower base multipliers + controlled per-run ramp/caps
+    Updated economy pipeline tests to account for Layer 1 pacing in expected formula outputs
+    Refined simulation meta-point hold policy to track progress and release on max-hold or stall windows (prevents indefinite wait deadlocks while still prioritizing confidence/leadership gains)
+    Regenerated projection/content reports after pacing pass 1 (`economy-projection-latest.json`, `content-completion-latest.json`)
+    Updated economy/content simulation policies to buy all available upgrades and hold prestige while confidence/leadership gains remain available in-run
+    Added simulation-config environment overrides for content profiling (`CONTENT_SIM_MAX_SECONDS`, `CONTENT_SIM_STEP_SECONDS`, `CONTENT_SIM_TICK_MS`, `CONTENT_SIM_CHECKIN_PASSES`)
+    Captured restored-baseline economy projection and content-completion reports under `test-results/` for follow-up rebalance decisions
+    Updated content-completion gym routing to transition to lifting as soon as the active prestige can fully close remaining bodyweight prestige-shop costs (removed redundant extra bodyweight run in baseline profile)
+    Moved max-energy derivation/clamping into `setupEnergyTimer` so deterministic long-sim runs are no longer dependent on UI refresh cadence
+    Rebuilt `scripts/content-completion-sim.cjs` for full bodyweight/lifting/yoga completion modeling:
+        - performance-safe deterministic stepping (UI refresh disabled in sim path)
+        - unlock-priority purchasing for lifting/yoga gyms
+        - strict meta waits for gangs/academy/flow cap and repeatables-last policy
+        - per-gym timing summary + completion milestone diagnostics in report output
+    Added `scripts/meta-softcap-stress.cjs` + npm script `profile:meta-softcap` to evaluate confidence/leadership/flow softcap behavior under high and extreme stacks
+    Updated `scripts/yoga-flow-scenarios.cjs` with route-cap timing telemetry and deterministic stepping slices
+    Tuned Yoga route-draft reward curve with progression-depth bonus to improve mid/max Flow-cap alignment toward prestige timing
+    Updated content simulation gang policy to only trigger fights at absorb threshold (`>=40%` power) to avoid loss-loop bias in confidence modeling
+    New full-content completion benchmark (active 5m check-ins, full meta waits): all current non-repeatable content completes in ~94h 55m simulated time
+
 v.53 1/13/2024
     Made the lifting competitions more in line with the other boosts to play. They were missed in the initial changes.
 

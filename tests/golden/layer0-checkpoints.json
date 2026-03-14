@@ -1,0 +1,157 @@
+{
+  "generatedAt": "2026-02-22T00:25:00.370Z",
+  "checkpoints": [
+    {
+      "atMs": 60000,
+      "metrics": {
+        "nowMs": 60000,
+        "money": 0,
+        "strength": 0.44999999999999996,
+        "endurance": 0.22499999999999998,
+        "agility": 0.09,
+        "intelligence": 0,
+        "energyCurrent": 2.3401062000000037,
+        "energyMax": 10.00225,
+        "views": 0,
+        "followers": 0,
+        "researchPoints": 0,
+        "pushupsTotal": 9.0018,
+        "pushupsCurrent": 50,
+        "assertionCount": 0
+      }
+    },
+    {
+      "atMs": 180000,
+      "metrics": {
+        "nowMs": 180000,
+        "money": 0.009746605842137499,
+        "strength": 0.6,
+        "endurance": 0.3,
+        "agility": 0.11999999999999998,
+        "intelligence": 0,
+        "energyCurrent": 5.140674400000021,
+        "energyMax": 10.003,
+        "views": 19.019002422499987,
+        "followers": 1.900242250000001,
+        "researchPoints": 0,
+        "pushupsTotal": 12.003300000000001,
+        "pushupsCurrent": 0,
+        "assertionCount": 0
+      }
+    },
+    {
+      "atMs": 300000,
+      "metrics": {
+        "nowMs": 300000,
+        "money": 0.04547379913335247,
+        "strength": 0.6,
+        "endurance": 0.3,
+        "agility": 0.11999999999999998,
+        "intelligence": 0,
+        "energyCurrent": 9.941250399999955,
+        "energyMax": 10.003,
+        "views": 41.08611097774998,
+        "followers": 4.100522749999999,
+        "researchPoints": 0,
+        "pushupsTotal": 12.003300000000001,
+        "pushupsCurrent": 0,
+        "assertionCount": 0
+      }
+    },
+    {
+      "atMs": 600000,
+      "metrics": {
+        "nowMs": 600000,
+        "money": 0.24994306729884455,
+        "strength": 1.2000000000000004,
+        "endurance": 0.6000000000000002,
+        "agility": 0.24000000000000007,
+        "intelligence": 0,
+        "energyCurrent": 9.9056736,
+        "energyMax": 10.006,
+        "views": 95.45607261868747,
+        "followers": 9.501810499999992,
+        "researchPoints": 0,
+        "pushupsTotal": 24.0138,
+        "pushupsCurrent": 0,
+        "assertionCount": 0
+      }
+    },
+    {
+      "atMs": 900000,
+      "metrics": {
+        "nowMs": 900000,
+        "money": 0.6196082843763958,
+        "strength": 1.800000000000001,
+        "endurance": 0.9000000000000005,
+        "agility": 0.36000000000000015,
+        "intelligence": 0,
+        "energyCurrent": 9.870087200000045,
+        "energyMax": 10.008999999999999,
+        "views": 151.1327260915,
+        "followers": 15.003815437500021,
+        "researchPoints": 0,
+        "pushupsTotal": 36.0315,
+        "pushupsCurrent": 0,
+        "assertionCount": 0
+      }
+    },
+    {
+      "atMs": 1800000,
+      "metrics": {
+        "nowMs": 1800000,
+        "money": 2.728759607108664,
+        "strength": 3.599999999999995,
+        "endurance": 1.7999999999999976,
+        "agility": 0.7200000000000004,
+        "intelligence": 0,
+        "energyCurrent": 9.763270400000067,
+        "energyMax": 10.018,
+        "views": 317.91569412825015,
+        "followers": 31.313907062500064,
+        "researchPoints": 0,
+        "pushupsTotal": 72.12780000000001,
+        "pushupsCurrent": 0,
+        "assertionCount": 0
+      }
+    },
+    {
+      "atMs": 3600000,
+      "metrics": {
+        "nowMs": 3600000,
+        "money": 11.528100359375157,
+        "strength": 7.349999999999982,
+        "endurance": 3.674999999999991,
+        "agility": 1.470000000000001,
+        "intelligence": 0,
+        "energyCurrent": 7.50514820000004,
+        "energyMax": 10.036750000000001,
+        "views": 661.5880162551882,
+        "followers": 64.1531568750003,
+        "researchPoints": 0,
+        "pushupsTotal": 123.38895000000001,
+        "pushupsCurrent": 0,
+        "assertionCount": 0
+      }
+    },
+    {
+      "atMs": 7200000,
+      "metrics": {
+        "nowMs": 7200000,
+        "money": 48.126723195013824,
+        "strength": 14.749999999999956,
+        "endurance": 7.374999999999978,
+        "agility": 2.9500000000000024,
+        "intelligence": 0,
+        "energyCurrent": 1.2150682000000093,
+        "energyMax": 10.073749999999999,
+        "views": 1379.0074277425015,
+        "followers": 129.7063736250002,
+        "researchPoints": 0,
+        "pushupsTotal": 198.20295000000002,
+        "pushupsCurrent": 50,
+        "assertionCount": 0
+      }
+    }
+  ]
+}

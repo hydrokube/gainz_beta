@@ -75,7 +75,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link d-none" id="comp-tab" data-toggle="tab" href="#compTab" role="tab"
-                            aria-controls="compTab" aria-selected="false">Competitions</a>
+                            aria-controls="compTab" aria-selected="false">Lifting Academy</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link d-none" id="openGym-tab" data-toggle="tab" href="#openGymTab" role="tab"
@@ -96,9 +96,10 @@
             <div class="col-3">
                 <br />
                 Energy <span id="resting"></span> <span id="energyPerSecond"></span>
-                <div class="progress">
+                <div class="progress energy-progress-wrap">
                     <div class="progress-bar" id="energyProgress" role="progressbar" aria-valuenow="0" aria-valuemin="0"
                         aria-valuemax="10"></div>
+                    <div class="energy-progress-value" id="energyProgressValue">0.00/0.00</div>
                 </div>
                 <div class="d-none" id="coffee">
                     <br />
@@ -122,16 +123,28 @@
                 </p>
 
                 <div id="confidenceWrap" class="d-none">
-                    <a href="#" data-toggle="tooltip" class="text-info"
+                    <a href="#" id="confidenceTooltip" data-toggle="tooltip" class="text-info"
                         title="Each point gives a 2% boost to all gym functions, but only after you buy the bodyweight upgrade. Confidence is permanent and doesn't reset on prestige."
                         data-html="true" onclick="toggleAlert(this);">Confidence:</a> <span
                         id="confidence"></span><br />
                 </div>
                 <div id="leadershipWrap" class="d-none">
-                    <a href="#" data-toggle="tooltip" class="text-info"
+                    <a href="#" id="leadershipTooltip" data-toggle="tooltip" class="text-info"
                         title="Each point gives a 2% boost to all stat gain, but only after you buy the lifting upgrade. Leadership is permanent and doesn't reset on prestige."
                         data-html="true" onclick="toggleAlert(this);">Leadership:</a> <span
                         id="leadership"></span><br />
+                </div>
+                <div id="flowWrap" class="d-none">
+                    <a href="#" id="flowTooltip" data-toggle="tooltip" class="text-info"
+                        title="Flow boosts all gyms and persists through prestiges."
+                        data-html="true" onclick="toggleAlert(this);">Flow:</a> <span
+                        id="flow"></span><br />
+                </div>
+                <div id="paceWrap" class="d-none">
+                    <a href="#" id="paceTooltip" data-toggle="tooltip" class="text-info"
+                        title="Pace boosts all gyms and persists through prestiges."
+                        data-html="true" onclick="toggleAlert(this);">Pace:</a> <span
+                        id="pace"></span><br />
                 </div>
 
                 <div class="d-none" id="payDay">
@@ -278,6 +291,236 @@
                                         </div>
                                     </div>
 
+                                </div>
+                                <div id="yogaWorkoutWrap" class="d-none">
+                                    <div id="yogaSun">
+                                        <a href="#" id="yogaSunTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="yogaSunText"></span></a>
+                                        &nbsp; <a id="startStopYogaSun" class="text-danger float-right"
+                                            onclick="startStop(yoga.sun, yogaSunTimerId, false)"
+                                            href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="yogaSunProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="yogaSunUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="yogaVinyasa">
+                                        <br />
+                                        <a href="#" id="yogaVinyasaTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="yogaVinyasaText"></span></a>
+                                        &nbsp; <a id="startStopYogaVinyasa" class="text-danger float-right"
+                                            onclick="startStop(yoga.vinyasa, yogaVinyasaTimerId, false)"
+                                            href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="yogaVinyasaProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="yogaVinyasaUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="yogaBalance">
+                                        <br />
+                                        <a href="#" id="yogaBalanceTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="yogaBalanceText"></span></a>
+                                        &nbsp; <a id="startStopYogaBalance" class="text-danger float-right"
+                                            onclick="startStop(yoga.balance, yogaBalanceTimerId, false)"
+                                            href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="yogaBalanceProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="yogaBalanceUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="yogaMobility">
+                                        <br />
+                                        <a href="#" id="yogaMobilityTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="yogaMobilityText"></span></a>
+                                        &nbsp; <a id="startStopYogaMobility" class="text-danger float-right"
+                                            onclick="startStop(yoga.mobility, yogaMobilityTimerId, false)"
+                                            href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="yogaMobilityProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="yogaMobilityUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="yogaCore">
+                                        <br />
+                                        <a href="#" id="yogaCoreTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="yogaCoreText"></span></a>
+                                        &nbsp; <a id="startStopYogaCore" class="text-danger float-right"
+                                            onclick="startStop(yoga.core, yogaCoreTimerId, false)"
+                                            href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="yogaCoreProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="yogaCoreUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="yogaBreath">
+                                        <br />
+                                        <a href="#" id="yogaBreathTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="yogaBreathText"></span></a>
+                                        &nbsp; <a id="startStopYogaBreath" class="text-danger float-right"
+                                            onclick="startStop(yoga.breath, yogaBreathTimerId, false)"
+                                            href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="yogaBreathProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="yogaBreathUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="cardioWorkoutWrap" class="d-none">
+                                    <div id="cardioTreadmill">
+                                        <a href="#" id="cardioTreadmillTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="cardioTreadmillText"></span></a>
+                                        &nbsp; <a id="startStopCardioTreadmill" class="text-danger float-right"
+                                            onclick="startStop(cardio.treadmill, cardioTreadmillTimerId, false)" href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="cardioTreadmillProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="cardioTreadmillUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                    </div>
+                                    <div id="cardioBike">
+                                        <br />
+                                        <a href="#" id="cardioBikeTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="cardioBikeText"></span></a>
+                                        &nbsp; <a id="startStopCardioBike" class="text-danger float-right"
+                                            onclick="startStop(cardio.bike, cardioBikeTimerId, false)" href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="cardioBikeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="cardioBikeUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                    </div>
+                                    <div id="cardioRow">
+                                        <br />
+                                        <a href="#" id="cardioRowTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="cardioRowText"></span></a>
+                                        &nbsp; <a id="startStopCardioRow" class="text-danger float-right"
+                                            onclick="startStop(cardio.row, cardioRowTimerId, false)" href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="cardioRowProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="cardioRowUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                    </div>
+                                    <div id="cardioSprints">
+                                        <br />
+                                        <a href="#" id="cardioSprintsTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="cardioSprintsText"></span></a>
+                                        &nbsp; <a id="startStopCardioSprints" class="text-danger float-right"
+                                            onclick="startStop(cardio.sprints, cardioSprintsTimerId, false)" href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="cardioSprintsProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="cardioSprintsUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                    </div>
+                                    <div id="cardioHills">
+                                        <br />
+                                        <a href="#" id="cardioHillsTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="cardioHillsText"></span></a>
+                                        &nbsp; <a id="startStopCardioHills" class="text-danger float-right"
+                                            onclick="startStop(cardio.hills, cardioHillsTimerId, false)" href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="cardioHillsProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="cardioHillsUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                    </div>
+                                    <div id="cardioRecovery">
+                                        <br />
+                                        <a href="#" id="cardioRecoveryTooltip" data-toggle="tooltip" class="text-warning"
+                                            title="" data-html="true" onclick="toggleAlert(this);"><span
+                                                id="cardioRecoveryText"></span></a>
+                                        &nbsp; <a id="startStopCardioRecovery" class="text-danger float-right"
+                                            onclick="startStop(cardio.recovery, cardioRecoveryTimerId, false)" href="#">Stop</a>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="cardioRecoveryProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                        <div class="progress progress-upgrade">
+                                            <div class="progress-bar bg-warning" id="cardioRecoveryUpgradeProgress"
+                                                role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="10"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div id="bwWorkoutWrap" class="d-none">
                                     <div id="bwPushups">
@@ -717,10 +960,12 @@
                                             Point(s)</span></li>
                                     <li><span class="text-success"><span id="liftingPointsOwned"></span> Lifting
                                             Point(s)</span></li>
-                                    <!--<li><span class="text-success"><span id="yogaPointsOwned"></span> Yoga
+                                    <li><span class="text-success"><span id="yogaPointsOwned"></span> Yoga
+                                            Point(s)</span></li>
+                                    <li id="layer2PointsOwnedRow" class="d-none"><span class="text-info"><span id="layer2PointsOwned"></span> Layer 2
+                                            Point(s) (preview)</span></li>
+                                    <li><span class="text-success"><span id="cardioPointsOwned"></span> Cardio
                                         Point(s)</span></li>
-                                <li><span class="text-success"><span id="cardioPointsOwned"></span> Cardio
-                                        Point(s)</span></li> -->
                                 </ul>
                                 <h5>On Reset:</h5><br />
                                 <ul>
@@ -730,10 +975,12 @@
                                             Point(s)</span></li>
                                     <li><span class="text-danger">+<span id="liftingPointsReceived"></span> Lifting
                                             Point(s)</span></li>
-                                    <!--<li><span class="text-danger">+<span id="yogaPointsReceived"></span> Yoga
+                                    <li><span class="text-danger">+<span id="yogaPointsReceived"></span> Yoga
                                             Point(s)</span></li>
+                                    <li id="layer2PointsReceivedRow" class="d-none"><span class="text-info">+<span id="layer2PointsReceived"></span> Layer 2
+                                            Point(s) (preview)</span></li>
                                     <li><span class="text-danger">+<span id="cardioPointsReceived"></span> Cardio
-                                            Point(s)</span></li> -->
+                                            Point(s)</span></li>
                                 </ul>
                                 <div id="prestigeReady" class="d-none">
                                     <h5>Type of Gym to Open</h5><br />
@@ -744,13 +991,13 @@
                                             class='btn btn-info btn-block btn-lg d-none' onclick='newGym(1);'>Open a
                                             Lifting
                                             Gym</button></div><br />
-                                    <!--<div><button type='button' id="newGymYoga"
+                                    <div><button type='button' id="newGymYoga"
                                             class='btn btn-info btn-block btn-lg' onclick='newGym(2);'>Open a Yoga
                                             Gym</button></div><br />
                                     <div><button type='button' id="newGymCardio"
                                             class='btn btn-info btn-block btn-lg' onclick='newGym(3);'>Open a Cardio
                                             Gym</button></div>
-                                            -->
+                                            <br />
                                 </div>
                             </div>
                             <div class="col">
@@ -817,6 +1064,48 @@
 
                                     </div>
                                 </div>
+                                <div><button type='button' id="globalYogaUpgradesModalTrigger"
+                                        class='btn btn-success btn-block btn-lg d-none' data-toggle="modal"
+                                        data-target="#globalYogaUpgradesModal">Yoga Upgrades</button></div><br />
+                                <div id="globalYogaUpgradesModal" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="globalYogaUpgradeModal" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Yoga Upgrades</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div id="globalYogaUpgrades" class="modal-body">
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div><button type='button' id="globalCardioUpgradesModalTrigger"
+                                        class='btn btn-success btn-block btn-lg d-none' data-toggle="modal"
+                                        data-target="#globalCardioUpgradesModal">Cardio Upgrades</button></div><br />
+                                <div id="globalCardioUpgradesModal" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="globalCardioUpgradeModal" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Cardio Upgrades</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div id="globalCardioUpgrades" class="modal-body">
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -850,6 +1139,51 @@
                             <div class="col">
                                 <div id="autoBuyers">
 
+                                </div>
+                                <div id="debugPanel" class="card mt-3 d-none" data-testid="debug-panel">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Debug Tools</h5>
+                                        <p class="mb-2">
+                                            Status: <strong id="debugStatus">Disabled</strong>
+                                        </p>
+                                        <p class="mb-2">
+                                            Speed: <strong id="debugSpeedValue">1x</strong>
+                                        </p>
+                                        <p class="mb-2">
+                                            Effective: <strong id="debugSpeedEffectiveValue">1.0x</strong>
+                                        </p>
+                                        <div class="btn-group btn-group-sm mb-3" role="group" aria-label="Debug speed controls">
+                                            <button type="button" id="debugSpeed1Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(1)">1x</button>
+                                            <button type="button" id="debugSpeed5Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(5)">5x</button>
+                                            <button type="button" id="debugSpeed20Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(20)">20x</button>
+                                            <button type="button" id="debugSpeed60Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(60)">60x</button>
+                                            <button type="button" id="debugSpeed100Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(100)">100x</button>
+                                            <button type="button" id="debugSpeed250Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(250)">250x</button>
+                                            <button type="button" id="debugSpeed500Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(500)">500x</button>
+                                            <button type="button" id="debugSpeed1000Btn" class="btn btn-secondary"
+                                                onclick="setDebugSpeedMultiplier(1000)">1000x</button>
+                                        </div>
+                                        <div class="mb-2">
+                                            <button type="button" id="debugSkipProgressionBtn" class="btn btn-outline-warning btn-sm"
+                                                onclick="debugSkipProgression()">Skip Progression</button>
+                                        </div>
+                                        <div class="mb-2">
+                                            <button type="button" id="debugForceUnlocksBtn" class="btn btn-outline-info btn-sm"
+                                                onclick="debugForceUnlocks()">Force Unlocks</button>
+                                            <button type="button" id="debugPrestigeJumpBtn" class="btn btn-outline-info btn-sm"
+                                                onclick="debugPrestigeJump()">Prestige Jump</button>
+                                        </div>
+                                        <small class="text-muted">
+                                            Hidden by default. Enable with <code>?debug=1</code>.
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1002,6 +1336,8 @@
                                                 managers, post-prestige</li>
                                         </ul>
                                     </li>
+                                    <li id="layer1PacingModifierRow" class="d-none"><span class="text-info"><span id="layer1PacingMod"></span>x progression modifier</span>.
+                                        Active after your first prestige and increases as you complete gym prestiges (<span id="layer1CompletedRuns">0</span> complete).</li>
                                 </ul>
                             </div>
                         </div>
@@ -1010,113 +1346,132 @@
                         <br />
                         <div class="row">
                             <div class="col">
-                                <h5>Lifting Competitions and Conferences</h5>
-                                <button type='button' id="createCompBtn" class="btn btn-primary btn-block"
-                                    onclick="addCompetition()">Create Competition</button>
-                                <p>
-                                    <table class="table table-sm">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th> <a href="#" data-toggle="tooltip" class="text-info"
-                                                        title="Generated by local conferences, modified by deadlift weight" data-html="true"
-                                                        onclick="toggleAlert(this);">Competitions</a></th>
-                                                <th class="text-right"><span id="liftingCompetitions"></span></th>
-                                            </tr>
-                                        </thead>
-                                        <tr>
-                                            <td>
-                                                <a href="#" data-toggle="tooltip" class="text-info"
-                                                    title="Generated by regional conferences, modified by squat weight." data-html="true"
-                                                    onclick="toggleAlert(this);">Local Conferences</a>
-                                            </td>
-                                            <td class="text-right">
-                                                <span id="liftingLocalConferences"></span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <a href="#" data-toggle="tooltip" class="text-info"
-                                                    title="Generated by state conferences, modified by bench weight." data-html="true"
-                                                    onclick="toggleAlert(this);">Regional Conferences</a>
-                                            </td>
-                                            <td class="text-right">
-                                                <span id="liftingRegionalConferences"></span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <a href="#" data-toggle="tooltip" class="text-info"
-                                                    title="Generated by national conferences, modified by row weight." data-html="true"
-                                                    onclick="toggleAlert(this);">State-wide Conferences</a>
-                                            </td>
-                                            <td class="text-right">
-                                                <span id="liftingStateConferences"></span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <a href="#" data-toggle="tooltip" class="text-info"
-                                                    title="Generated by world-wide conferences, modified by overhead press weight." data-html="true"
-                                                    onclick="toggleAlert(this);">National Conferences</a>
-                                            </td>
-                                            <td class="text-right">
-                                                <span id="liftingNationalConferences"></span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <a href="#" data-toggle="tooltip" class="text-info"
-                                                    title="Not generated by anything." data-html="true"
-                                                    onclick="toggleAlert(this);">World-wide Conferences</a>
-                                            </td>
-                                            <td class="text-right">
-                                                <span id="liftingWorldConferences"></span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </p>
-                                <p>Competition Money Multiplier: <span id="compMoneyMulti"></span>x</p>
+                                <div id="liftingCompWrap" class="d-none">
+                                <h5>Lifting Academy Seasons</h5>
+                                <p class="mb-2">Academy Credits: <span id="academyCredits"></span></p>
+                                <p class="mb-2">Passive credits: <span id="academyCreditsPerSecond"></span>/s</p>
+                                <p class="mb-2">Season Phase: <span id="academyPhase"></span></p>
+                                <p class="mb-2">Season Progress: <span id="academyProgress"></span></p>
+                                <p class="mb-2">Seasons Completed (max 10): <span id="academySeasonsCompleted"></span></p>
+                                <p class="mb-2">Current meet money multiplier: <span id="academyMoneyMulti"></span>x</p>
+                                <hr />
+                                <h6>Training Camp Allocation</h6>
+                                <p class="mb-2">Unspent Camp Points: <span id="academyCampUnspent"></span></p>
+                                <div class="academy-camp-row mb-2">
+                                    <div class="academy-camp-label">
+                                        <strong><a href="#" data-toggle="tooltip" class="text-info"
+                                                title="Improves season phase progress speed each second." data-html="true"
+                                                onclick="toggleAlert(this);">Strength:</a></strong>
+                                    </div>
+                                    <div class="academy-camp-value" id="academyCampStrength"></div>
+                                    <button type="button" class="btn btn-sm btn-secondary academy-camp-btn" onclick="adjustAcademyCampAllocation('strength', -1)">-</button>
+                                    <button type="button" class="btn btn-sm btn-primary academy-camp-btn" onclick="adjustAcademyCampAllocation('strength', 1)">+</button>
+                                </div>
+                                <div class="academy-camp-row mb-2">
+                                    <div class="academy-camp-label">
+                                        <strong><a href="#" data-toggle="tooltip" class="text-info"
+                                                title="Reduces academy upgrade costs slightly through better planning efficiency." data-html="true"
+                                                onclick="toggleAlert(this);">Technique:</a></strong>
+                                    </div>
+                                    <div class="academy-camp-value" id="academyCampTechnique"></div>
+                                    <button type="button" class="btn btn-sm btn-secondary academy-camp-btn" onclick="adjustAcademyCampAllocation('technique', -1)">-</button>
+                                    <button type="button" class="btn btn-sm btn-primary academy-camp-btn" onclick="adjustAcademyCampAllocation('technique', 1)">+</button>
+                                </div>
+                                <div class="academy-camp-row mb-2">
+                                    <div class="academy-camp-label">
+                                        <strong><a href="#" data-toggle="tooltip" class="text-info"
+                                                title="Speeds up lifting action loops while in the lifting gym." data-html="true"
+                                                onclick="toggleAlert(this);">Recovery:</a></strong>
+                                    </div>
+                                    <div class="academy-camp-value" id="academyCampRecovery"></div>
+                                    <button type="button" class="btn btn-sm btn-secondary academy-camp-btn" onclick="adjustAcademyCampAllocation('recovery', -1)">-</button>
+                                    <button type="button" class="btn btn-sm btn-primary academy-camp-btn" onclick="adjustAcademyCampAllocation('recovery', 1)">+</button>
+                                </div>
+                                <div class="academy-camp-row mb-2">
+                                    <div class="academy-camp-label">
+                                        <strong><a href="#" data-toggle="tooltip" class="text-info"
+                                                title="Boosts academy credit and leadership rewards when meets complete." data-html="true"
+                                                onclick="toggleAlert(this);">Promotion:</a></strong>
+                                    </div>
+                                    <div class="academy-camp-value" id="academyCampPromotion"></div>
+                                    <button type="button" class="btn btn-sm btn-secondary academy-camp-btn" onclick="adjustAcademyCampAllocation('promotion', -1)">-</button>
+                                    <button type="button" class="btn btn-sm btn-primary academy-camp-btn" onclick="adjustAcademyCampAllocation('promotion', 1)">+</button>
+                                </div>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="resetAcademyCampAllocation()">Reset Camp Allocation</button>
+                                <hr />
+                                <h6>Camp Expansion</h6>
+                                <p class="mb-2">Expansion Level: <span id="academyCampPointBoostLevel"></span></p>
+                                <button type="button" id="academyCampPointBoostBtn" class="btn btn-sm btn-secondary disabled" onclick="academyCampPointBoostClick()">Camp Expansion +1</button>
+                                <p class="mb-0" id="academyCampPointBoostDesc"></p>
+                                </div>
+                                <div id="yogaFlowWrap" class="d-none">
+                                    <h5>Yoga Route</h5>
+                                    <p class="mb-2">Active Route: <span id="yogaBreathPhase"></span></p>
+                                    <p class="mb-2">Route Progress: <span id="yogaBreathProgressText"></span></p>
+                                    <p class="mb-2">Route Stability: <span id="yogaRouteStability"></span></p>
+                                    <p class="mb-2">Routes Completed: <span id="yogaBreathCycles"></span></p>
+                                    <p class="mb-2">Average Route Quality: <span id="yogaBreathQuality"></span></p>
+                                    <p class="mb-2">Clean Routes: <span id="yogaBreathPerfect"></span></p>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-info" id="yogaBreathCycleProgress" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                            aria-valuemax="10"></div>
+                                    </div>
+                                    <div class="btn-group-vertical w-100 mb-2" role="group" aria-label="Yoga route options">
+                                        <button type="button" id="yogaRouteOption0" class="btn btn-outline-info btn-sm text-left mb-1" onclick="selectYogaRoute(0)">Route Option A</button>
+                                        <button type="button" id="yogaRouteOption1" class="btn btn-outline-info btn-sm text-left mb-1" onclick="selectYogaRoute(1)">Route Option B</button>
+                                        <button type="button" id="yogaRouteOption2" class="btn btn-outline-info btn-sm text-left" onclick="selectYogaRoute(2)">Route Option C</button>
+                                    </div>
+                                    <button type="button" id="yogaBreathAnchorBtn" class="btn btn-primary btn-sm" onclick="anchorYogaBreathPhase()">Center Breath</button>
+                                    <p class="mt-2 mb-0 text-muted" id="yogaBreathHint"></p>
+                                </div>
+                                <div id="cardioRaceWrap" class="d-none">
+                                    <h5>Race Day</h5>
+                                    <p class="mb-2">Active Event: <span id="cardioRaceName"></span></p>
+                                    <p class="mb-2">Current Place: <span id="cardioRacePlace"></span></p>
+                                    <p class="mb-2">Fatigue: <span id="cardioRaceFatigue"></span></p>
+                                    <p class="mb-2">Races Completed: <span id="cardioRaceCompleted"></span></p>
+                                    <p class="mb-2">Average Finish Quality: <span id="cardioRaceQuality"></span></p>
+                                    <p class="mb-2">Last Finish Quality: <span id="cardioRaceLastQuality"></span></p>
+                                    <div class="mb-2">
+                                        <div class="small text-muted">You - <span id="cardioRaceYouText"></span></div>
+                                        <div class="progress mb-1">
+                                            <div class="progress-bar bg-danger" id="cardioRaceYouBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="small text-muted">Rival A - <span id="cardioRaceRival1Text"></span></div>
+                                        <div class="progress mb-1">
+                                            <div class="progress-bar bg-info" id="cardioRaceRival1Bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="small text-muted">Rival B - <span id="cardioRaceRival2Text"></span></div>
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar bg-dark" id="cardioRaceRival2Bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-warning" id="cardioRaceCycleProgress" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                            aria-valuemax="10"></div>
+                                    </div>
+                                    <div class="btn-group-vertical w-100 mb-2" role="group" aria-label="Cardio race options">
+                                        <button type="button" id="cardioRaceOption0" class="btn btn-outline-danger btn-sm text-left mb-1" onclick="selectCardioRace(0, false)">Neighborhood Heat</button>
+                                        <button type="button" id="cardioRaceOption1" class="btn btn-outline-danger btn-sm text-left mb-1" onclick="selectCardioRace(1, false)">City Circuit</button>
+                                        <button type="button" id="cardioRaceOption2" class="btn btn-outline-danger btn-sm text-left" onclick="selectCardioRace(2, false)">Final Stretch</button>
+                                    </div>
+                                    <div class="btn-group w-100 mb-2" role="group" aria-label="Race Day controls">
+                                        <button type="button" id="cardioRacePushBtn" class="btn btn-outline-warning btn-sm" onclick="pushCardioRace()">Push</button>
+                                        <button type="button" id="cardioRaceSettleBtn" class="btn btn-outline-info btn-sm" onclick="settleCardioRace()">Settle</button>
+                                        <button type="button" id="cardioRaceRecoverBtn" class="btn btn-outline-success btn-sm" onclick="recoverCardioRace()">Recover</button>
+                                    </div>
+                                    <button type="button" id="cardioRaceResetBtn" class="btn btn-outline-danger btn-sm" onclick="resetCardioRace()">Reset Race</button>
+                                    <p class="mt-2 mb-0 text-muted" id="cardioRaceHint"></p>
+                                </div>
                             </div>
                             <div class="col">
-                                <div id="liftingLocalConferenceWrap"><button type='button'
-                                        id="liftingLocalConferenceBtn" class="btn btn-secondary btn-block disabled"
-                                        onclick="buyLiftingComp(this, lifting.comps.conferences)">Create Local Conference</button>
-                                    <p id="liftingLocalConferenceDesc">
-                                        <strong>Cost: <span id="liftingLocalConferenceCost"></span>
-                                            competitions</strong> - create a
-                                        local conference to generate competitions</p>
+                                <div id="academyUpgradeCol" class="d-none">
+                                    <h6>Academy Upgrades</h6>
+                                    <div id="academyUpgrades"></div>
                                 </div>
-                                <div id="liftingRegionalConferenceWrap"><button type='button'
-                                        id="liftingRegionalConferenceBtn" class="btn btn-secondary btn-block disabled"
-                                        onclick="buyLiftingComp(this, lifting.comps.regionalConferences)">Create Regional Conference</button>
-                                    <p id="liftingRegionalConferenceDesc">
-                                        <strong>Cost: <span id="liftingRegionalConferenceCost"></span>
-                                            competitions</strong> - create a
-                                        regional conference to generate local conferences</p>
-                                </div>
-                                <div id="liftingStateConferenceWrap"><button type='button'
-                                        id="liftingStateConferenceBtn" class="btn btn-secondary btn-block disabled"
-                                        onclick="buyLiftingComp(this, lifting.comps.stateConferences)">Create State-wide Conference</button>
-                                    <p id="liftingStateConferenceDesc">
-                                        <strong>Cost: <span id="liftingStateConferenceCost"></span>
-                                            competitions</strong> - create a
-                                        state-wide conference to generate regional conferences</p>
-                                </div>
-                                <div id="liftingNationalConferenceWrap"><button type='button'
-                                        id="liftingNationalConferenceBtn" class="btn btn-secondary btn-block disabled"
-                                        onclick="buyLiftingComp(this, lifting.comps.nationalConferences)">Create National Conference</button>
-                                    <p id="liftingNationalConferenceDesc">
-                                        <strong>Cost: <span id="liftingNationalConferenceCost"></span>
-                                            competitions</strong> - create a
-                                        national conference to generate state-wide conferences</p>
-                                </div>
-                                <div id="liftingWorldConferenceWrap"><button type='button'
-                                        id="liftingWorldConferenceBtn" class="btn btn-secondary btn-block disabled"
-                                        onclick="buyLiftingComp(this, lifting.comps.worldConferences)">Create World-wide Conference</button>
-                                    <p id="liftingWorldConferenceDesc">
-                                        <strong>Cost: <span id="liftingWorldConferenceCost"></span>
-                                            competitions</strong> - create a
-                                        world-wide conference to generate national conferences. The first 10 purchased give .1 leadership each.</p>
+                                <div id="flowUpgradeCol" class="d-none">
+                                    <h6>Flow Shop</h6>
+                                    <div id="flowUpgrades"></div>
                                 </div>
                             </div>
                         </div>
@@ -1133,7 +1488,7 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="js/hacktimer.min.js"></script>
+    <script src="js/clock.js"></script>
     <!--
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
@@ -1150,8 +1505,12 @@
     <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/math.min.js"></script>
+    <script src="js/random.js"></script>
+    <script src="js/break_infinity.min.js"></script>
+    <script src="js/number.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/test-hooks.js"></script>
 </body>
 
 </html>
