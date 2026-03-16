@@ -27,7 +27,10 @@ test("late global upgrades target intended layer 1 and global runtime systems wi
     const upgrade37 = prestige.upgrades.find((entry) => entry.id === 37);
     const upgrade38 = prestige.upgrades.find((entry) => entry.id === 38);
     const upgrade39 = prestige.upgrades.find((entry) => entry.id === 39);
-    if (!upgrade27 || !upgrade28 || !upgrade30 || !upgrade34 || !upgrade35 || !upgrade36 || !upgrade37 || !upgrade38 || !upgrade39) {
+    const upgrade44 = prestige.upgrades.find((entry) => entry.id === 44);
+    const upgrade45 = prestige.upgrades.find((entry) => entry.id === 45);
+    const upgrade46 = prestige.upgrades.find((entry) => entry.id === 46);
+    if (!upgrade27 || !upgrade28 || !upgrade30 || !upgrade34 || !upgrade35 || !upgrade36 || !upgrade37 || !upgrade38 || !upgrade39 || !upgrade44 || !upgrade45 || !upgrade46) {
       return { missing: true };
     }
 
@@ -40,6 +43,9 @@ test("late global upgrades target intended layer 1 and global runtime systems wi
     upgrade37.isPurchased = false;
     upgrade38.isPurchased = false;
     upgrade39.isPurchased = false;
+    upgrade44.isPurchased = false;
+    upgrade45.isPurchased = false;
+    upgrade46.isPurchased = false;
 
     research.pointGrowth = 0.123;
     job.moneyGrowth = 0.456;
@@ -52,6 +58,7 @@ test("late global upgrades target intended layer 1 and global runtime systems wi
     gym.createClasses.classAmount = 7;
     gym.advertising.campaignGrowth = 13;
     stats.energy.increase = 1.6;
+    gym.employees.sales.boost = 0.09;
 
     const before = {
       researchPointGrowth: research.pointGrowth,
@@ -65,9 +72,10 @@ test("late global upgrades target intended layer 1 and global runtime systems wi
       classAmount: gym.createClasses.classAmount,
       campaignGrowth: gym.advertising.campaignGrowth,
       energyIncrease: stats.energy.increase,
+      salesBoost: gym.employees.sales.boost,
     };
 
-    [27, 28, 30, 34, 35, 36, 37, 38, 39].forEach((id) => {
+    [27, 28, 30, 34, 35, 36, 37, 38, 39, 44, 45, 46].forEach((id) => {
       const button = document.createElement("button");
       button.id = `globalUpgradeBtn${id}`;
       document.body.appendChild(button);
@@ -87,6 +95,7 @@ test("late global upgrades target intended layer 1 and global runtime systems wi
       classAmount: gym.createClasses.classAmount,
       campaignGrowth: gym.advertising.campaignGrowth,
       energyIncrease: stats.energy.increase,
+      salesBoost: gym.employees.sales.boost,
     };
 
     return { missing: false, before, after };
@@ -96,12 +105,13 @@ test("late global upgrades target intended layer 1 and global runtime systems wi
   expect(result.after.adGrowth).toBeCloseTo(result.before.adGrowth * 2, 10);
   expect(result.after.influenceGrowth).toBeCloseTo(result.before.influenceGrowth * 2, 10);
   expect(result.after.gymMoneyGrowth).toBeCloseTo(result.before.gymMoneyGrowth * 2, 10);
-  expect(result.after.adMulti).toBeCloseTo(result.before.adMulti * 2, 10);
-  expect(result.after.classMultiplier).toBeCloseTo(result.before.classMultiplier * 2, 10);
   expect(result.after.trainAmount).toBeCloseTo(result.before.trainAmount * 2, 10);
-  expect(result.after.classAmount).toBeCloseTo(result.before.classAmount * 2, 10);
-  expect(result.after.campaignGrowth).toBeCloseTo(result.before.campaignGrowth * 2, 10);
+  expect(result.after.classAmount).toBeCloseTo(result.before.classAmount * 3, 10);
+  expect(result.after.campaignGrowth).toBeCloseTo(result.before.campaignGrowth * 3, 10);
   expect(result.after.energyIncrease).toBeCloseTo(result.before.energyIncrease * 1.5, 10);
+  expect(result.after.salesBoost).toBeCloseTo(result.before.salesBoost * 1.5, 10);
   expect(result.after.researchPointGrowth).toBeCloseTo(result.before.researchPointGrowth, 10);
   expect(result.after.jobMoneyGrowth).toBeCloseTo(result.before.jobMoneyGrowth, 10);
+  expect(result.after.classMultiplier).toBeCloseTo(result.before.classMultiplier * 3, 10);
+  expect(result.after.adMulti).toBeCloseTo(result.before.adMulti * 3, 10);
 });

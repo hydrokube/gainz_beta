@@ -3272,6 +3272,30 @@ var prestige = {
             desc: "<strong>Cost: 12 Global Points</strong> - Unlock cardio gyms.",
             cost: 12
         },
+        {
+            id: 44,
+            isActive: false,
+            isPurchased: false,
+            name: "Waitlist Arbitrage",
+            desc: "<strong>Cost: 236 Global Points</strong> - Increase gym member growth and sales closing strength by 50%.",
+            cost: 236
+        },
+        {
+            id: 45,
+            isActive: false,
+            isPurchased: false,
+            name: "Class Boiler Room",
+            desc: "<strong>Cost: 268 Global Points</strong> - Increase class payout scaling and class batch size by 50%.",
+            cost: 268
+        },
+        {
+            id: 46,
+            isActive: false,
+            isPurchased: false,
+            name: "Campaign Clone Farm",
+            desc: "<strong>Cost: 304 Global Points</strong> - Increase campaign stock growth and ad conversion by 50%.",
+            cost: 304
+        },
     ],
     bw: {
         current: 0,

@@ -6,6 +6,9 @@ v.54 - 3/14/2026
         - expanded meta progression with confidence / leadership / flow / pace shop updates, repeatables, and cross-gym bonuses
         - reworked lifting side content into the academy / training-camp system and improved bodyweight, yoga, and cardio branch identity
         - fine-tuned pacing, late-game global upgrades, offline progress, passive gain rates, and multiple UI / refresh bugs
+        - extended the late global upgrade ladder so end-of-Layer-1 cardio runs still have meaningful global spend targets
+        - added an extra late-run pacing softcap so only the deepest endgame loops compress while first and mid Layer 1 runs stay in their current windows
+        - rebuilt the deterministic timing/simulation tooling to cover current Layer 1 content, resumable long sims, and cardio-inclusive completion reports
 
 v.53 1/13/2024
     Made the lifting competitions more in line with the other boosts to play. They were missed in the initial changes.

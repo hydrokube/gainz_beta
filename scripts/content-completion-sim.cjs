@@ -402,26 +402,36 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       const allBwPrestigeUpgrades = allPurchased(prestige.bw.upgrades);
       const allLiftingPrestigeUpgrades = allPurchased(prestige.lifting.upgrades);
       const allYogaPrestigeUpgrades = allPurchased(prestige.yoga.upgrades);
+      const allCardioPrestigeUpgrades = allPurchased(prestige.cardio.upgrades);
       const allConfidenceUpgrades = allPurchased(prestige.bw.confidenceUpgrades || []);
       const allLeadershipUpgrades = allPurchased(prestige.lifting.leadershipUpgrades || []);
       const allFlowUpgrades = allPurchased(prestige.yoga.flowUpgrades || []);
+      const allPaceUpgrades = allPurchased(prestige.cardio.paceUpgrades || []);
       const allBwBranch = allBwPrestigeUpgrades && allConfidenceUpgrades;
       const allLiftingBranch = allLiftingPrestigeUpgrades && allLeadershipUpgrades;
       const allYogaBranch = allYogaPrestigeUpgrades && allFlowUpgrades;
+      const allCardioBranch = allCardioPrestigeUpgrades && allPaceUpgrades;
 
       return {
         allGlobalPrestigeUpgrades,
         allBwPrestigeUpgrades,
         allLiftingPrestigeUpgrades,
         allYogaPrestigeUpgrades,
+        allCardioPrestigeUpgrades,
         allConfidenceUpgrades,
         allLeadershipUpgrades,
         allFlowUpgrades,
+        allPaceUpgrades,
         allBwBranch,
         allLiftingBranch,
         allYogaBranch,
+        allCardioBranch,
         allNonRepeatable:
-          allGlobalPrestigeUpgrades && allBwBranch && allLiftingBranch && allYogaBranch,
+          allGlobalPrestigeUpgrades &&
+          allBwBranch &&
+          allLiftingBranch &&
+          allYogaBranch &&
+          allCardioBranch,
       };
     }
 
@@ -431,9 +441,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
         bodyweight: countPurchased(prestige.bw.upgrades),
         lifting: countPurchased(prestige.lifting.upgrades),
         yoga: countPurchased(prestige.yoga.upgrades),
+        cardio: countPurchased(prestige.cardio.upgrades),
         confidenceShop: countPurchased(prestige.bw.confidenceUpgrades || []),
         leadershipShop: countPurchased(prestige.lifting.leadershipUpgrades || []),
         flowShop: countPurchased(prestige.yoga.flowUpgrades || []),
+        paceShop: countPurchased(prestige.cardio.paceUpgrades || []),
       };
     }
 
@@ -448,9 +460,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       total += countPurchased(prestige.bw.upgrades);
       total += countPurchased(prestige.lifting.upgrades);
       total += countPurchased(prestige.yoga.upgrades);
+      total += countPurchased(prestige.cardio.upgrades);
       total += countPurchased(prestige.bw.confidenceUpgrades || []);
       total += countPurchased(prestige.lifting.leadershipUpgrades || []);
       total += countPurchased(prestige.yoga.flowUpgrades || []);
+      total += countPurchased(prestige.cardio.paceUpgrades || []);
 
       if (checks.gymType !== -1) {
         total += countPurchased(gym.upgrades);
@@ -471,6 +485,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
           total += countPurchased(gym.yoga.upgrades);
           total += countPurchased(gym.yoga.gymUpgrades);
           total += countPurchased(gym.yoga.adUpgrades);
+        }
+        if (checks.gymType === 3) {
+          total += countPurchased(gym.cardio.upgrades);
+          total += countPurchased(gym.cardio.gymUpgrades);
+          total += countPurchased(gym.cardio.adUpgrades);
         }
       }
 
@@ -497,7 +516,7 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       if (!repeatingApi || !repeatingApi.definitions || typeof repeatingUpgradeClick !== "function") {
         return;
       }
-      const scopes = ["global", "bodyweight", "lifting", "yoga", "flow", "confidence", "leadership"];
+      const scopes = ["global", "bodyweight", "lifting", "yoga", "cardio", "flow", "pace", "confidence", "leadership"];
       for (let scopeIndex = 0; scopeIndex < scopes.length; scopeIndex += 1) {
         const defs = repeatingApi.definitions[scopes[scopeIndex]];
         if (!Array.isArray(defs)) {
@@ -521,9 +540,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       checkPrestigeUpgradeDisable(prestige.bw.upgrades, prestige.bw.current, "globalBwUpgrade");
       checkPrestigeUpgradeDisable(prestige.lifting.upgrades, prestige.lifting.current, "globalLiftingUpgrade");
       checkPrestigeUpgradeDisable(prestige.yoga.upgrades, prestige.yoga.current, "globalYogaUpgrade");
+      checkPrestigeUpgradeDisable(prestige.cardio.upgrades, prestige.cardio.current, "globalCardioUpgrade");
       checkPrestigeUpgradeDisable(prestige.bw.confidenceUpgrades || [], prestige.bw.confidence, "confidenceUpgrade");
       checkPrestigeUpgradeDisable(prestige.lifting.leadershipUpgrades || [], prestige.lifting.leadership, "leadershipUpgrade");
       checkPrestigeUpgradeDisable(prestige.yoga.flowUpgrades || [], prestige.yoga.flow, "flowUpgrade");
+      checkPrestigeUpgradeDisable(prestige.cardio.paceUpgrades || [], prestige.cardio.pace, "paceUpgrade");
 
       if (checks.gymType !== -1) {
         checkUpgradeDisable(gym.upgrades, stats.money, "upgrade", false);
@@ -544,6 +565,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
           checkUpgradeDisable(gym.yoga.upgrades, stats.money, "yogaUpgrade", false);
           checkUpgradeDisable(gym.yoga.gymUpgrades, stats.money, "gymYogaUpgrade", false);
           checkUpgradeDisable(gym.yoga.adUpgrades, gym.advertising.influence, "adYogaUpgrade", false);
+        }
+        if (checks.gymType === 3) {
+          checkUpgradeDisable(gym.cardio.upgrades, stats.money, "cardioUpgrade", false);
+          checkUpgradeDisable(gym.cardio.gymUpgrades, stats.money, "gymCardioUpgrade", false);
+          checkUpgradeDisable(gym.cardio.adUpgrades, gym.advertising.influence, "adCardioUpgrade", false);
         }
 
         checkEmployeeDisable(gym.employees.sales, stats.money, "sales");
@@ -602,6 +628,41 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
         anchorYogaBreathPhase(false);
       }
     }
+
+    function getPreferredCardioRaceIndex(intervalState) {
+      if (hasPurchasedPrestigeUpgrade(prestige.cardio.upgrades, 17) || hasPurchasedPrestigeUpgrade(prestige.cardio.paceUpgrades || [], 4)) {
+        return 2;
+      }
+      if (hasPurchasedPrestigeUpgrade(prestige.cardio.paceUpgrades || [], 3) || (intervalState.runEarned || 0) > 0.55) {
+        return 1;
+      }
+      return 0;
+    }
+
+    function runCardioRaceManualPass() {
+      if (checks.gymType !== 3 || !isUpgradePurchased(prestige.cardio.upgrades, 0)) {
+        return;
+      }
+
+      const intervalState = ensureCardioIntervalState();
+      if (intervalState.activeRaceId === "") {
+        selectCardioRace(getPreferredCardioRaceIndex(intervalState), false);
+        return;
+      }
+
+      const lead = Math.max(intervalState.rival1Progress || 0, intervalState.rival2Progress || 0);
+      const gap = lead - (intervalState.playerProgress || 0);
+      if ((intervalState.fatigue || 0) > 0.72) {
+        recoverCardioRace();
+        return;
+      }
+      if (gap > 0.06) {
+        pushCardioRace();
+        return;
+      }
+      settleCardioRace();
+    }
+
     function buyAvailablePass() {
       if (checks.gymType === -1) {
         autobuyUpgrades(upgrades, "upgrade", stats.money);
@@ -622,14 +683,20 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       if (yogaUnlock && !yogaUnlock.isPurchased && prestige.current >= yogaUnlock.cost) {
         globalUpgradeClick($("#globalUpgradeBtn33"), false);
       }
+      const cardioUnlock = getUpgradeById(prestige.upgrades, 43);
+      if (cardioUnlock && !cardioUnlock.isPurchased && prestige.current >= cardioUnlock.cost) {
+        globalUpgradeClick($("#globalUpgradeBtn43"), false);
+      }
 
       autobuyUpgrades(prestige.upgrades, "globalUpgrade", prestige.current);
       autobuyUpgrades(prestige.bw.upgrades, "globalBwUpgrade", prestige.bw.current);
       autobuyUpgrades(prestige.lifting.upgrades, "globalLiftingUpgrade", prestige.lifting.current);
       autobuyUpgrades(prestige.yoga.upgrades, "globalYogaUpgrade", prestige.yoga.current);
+      autobuyUpgrades(prestige.cardio.upgrades, "globalCardioUpgrade", prestige.cardio.current);
       autobuyUpgrades(prestige.bw.confidenceUpgrades || [], "confidenceUpgrade", prestige.bw.confidence);
       autobuyUpgrades(prestige.lifting.leadershipUpgrades || [], "leadershipUpgrade", prestige.lifting.leadership);
       autobuyUpgrades(prestige.yoga.flowUpgrades || [], "flowUpgrade", prestige.yoga.flow);
+      autobuyUpgrades(prestige.cardio.paceUpgrades || [], "paceUpgrade", prestige.cardio.pace);
 
       if (checks.gymType !== -1) {
         autobuyUpgrades(gym.upgrades, "upgrade", stats.money);
@@ -670,6 +737,13 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
           autobuyUpgrades(gym.yoga.gymUpgrades, "gymYogaUpgrade", stats.money);
           autobuyUpgrades(gym.yoga.adUpgrades, "adYogaUpgrade", gym.advertising.influence);
           runYogaRouteManualPass();
+        }
+
+        if (checks.gymType === 3) {
+          autobuyUpgrades(gym.cardio.upgrades, "cardioUpgrade", stats.money);
+          autobuyUpgrades(gym.cardio.gymUpgrades, "gymCardioUpgrade", stats.money);
+          autobuyUpgrades(gym.cardio.adUpgrades, "adCardioUpgrade", gym.advertising.influence);
+          runCardioRaceManualPass();
         }
 
         autobuyEmployees(gym.employees.sales, "salesBtn");
@@ -719,6 +793,10 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       return isUpgradePurchased(prestige.upgrades, 33);
     }
 
+    function isCardioUnlocked() {
+      return isUpgradePurchased(prestige.upgrades, 43);
+    }
+
     function shouldHoldForMetaPoints() {
       if (!checks.isPrestige) {
         return false;
@@ -736,6 +814,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       if (checks.gymType === 2 && isUpgradePurchased(prestige.yoga.upgrades, 0)) {
         const flowState = ensureYogaFlowState();
         return flowState.runEarned + META_POINT_EPSILON < getYogaFlowRunCap();
+      }
+
+      if (checks.gymType === 3 && isUpgradePurchased(prestige.cardio.upgrades, 0)) {
+        const intervalState = ensureCardioIntervalState();
+        return intervalState.runEarned + META_POINT_EPSILON < getCardioPaceRunCap();
       }
 
       return false;
@@ -777,6 +860,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
         return flowState.runEarned + Math.min(1, flowState.routeProgress || 0) + prestige.yoga.flow;
       }
 
+      if (checks.gymType === 3 && isUpgradePurchased(prestige.cardio.upgrades, 0)) {
+        const intervalState = ensureCardioIntervalState();
+        return intervalState.runEarned + Math.min(1, intervalState.playerProgress || 0) + prestige.cardio.pace;
+      }
+
       return 0;
     }
 
@@ -790,6 +878,9 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       if (gymType === 2) {
         return getRemainingCost(prestige.yoga.upgrades) + getRemainingCost(prestige.yoga.flowUpgrades || []);
       }
+      if (gymType === 3) {
+        return getRemainingCost(prestige.cardio.upgrades) + getRemainingCost(prestige.cardio.paceUpgrades || []);
+      }
       return 0;
     }
 
@@ -800,6 +891,9 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       }
       if (isYogaUnlocked()) {
         candidateGyms.push(2);
+      }
+      if (isCardioUnlocked()) {
+        candidateGyms.push(3);
       }
       return candidateGyms;
     }
@@ -822,6 +916,9 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       }
       if (!completionState.allFlowUpgrades && isYogaUnlocked()) {
         return 2;
+      }
+      if (!completionState.allPaceUpgrades && isCardioUnlocked()) {
+        return 3;
       }
 
       const remaining = [];
@@ -850,6 +947,8 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
             points = prestige.lifting.current;
           } else if (gymType === 2) {
             points = prestige.yoga.current;
+          } else if (gymType === 3) {
+            points = prestige.cardio.current;
           }
           if (points < minPoints) {
             minPoints = points;
@@ -870,6 +969,8 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
         focusGymType = 1;
       } else if (isYogaUnlocked() && !completionState.allYogaBranch) {
         focusGymType = 2;
+      } else if (isCardioUnlocked() && !completionState.allCardioBranch) {
+        focusGymType = 3;
       }
 
       if (focusGymType != null) {
@@ -926,6 +1027,16 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
           averageRouteQuality: flowState.averageQuality,
         };
       }
+      if (gymType === 3) {
+        const intervalState = ensureCardioIntervalState();
+        return {
+          paceRunEarned: intervalState.runEarned,
+          paceRunCap: getCardioPaceRunCap(),
+          racesCompleted: intervalState.totalRaces,
+          averageRaceQuality: intervalState.averageQuality,
+          racePlace: intervalState.currentPlace,
+        };
+      }
       return null;
     }
     const resumedSimulation =
@@ -948,12 +1059,15 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
             allBwPrestigeUpgradesAt: null,
             allLiftingPrestigeUpgradesAt: null,
             allYogaPrestigeUpgradesAt: null,
+            allCardioPrestigeUpgradesAt: null,
             allConfidenceUpgradesAt: null,
             allLeadershipUpgradesAt: null,
             allFlowUpgradesAt: null,
+            allPaceUpgradesAt: null,
             allBwBranchAt: null,
             allLiftingBranchAt: null,
             allYogaBranchAt: null,
+            allCardioBranchAt: null,
             allNonRepeatableAt: null,
           };
 
@@ -1005,6 +1119,9 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       if (completionMilestones.allYogaPrestigeUpgradesAt == null && completionState.allYogaPrestigeUpgrades) {
         completionMilestones.allYogaPrestigeUpgradesAt = elapsedSeconds;
       }
+      if (completionMilestones.allCardioPrestigeUpgradesAt == null && completionState.allCardioPrestigeUpgrades) {
+        completionMilestones.allCardioPrestigeUpgradesAt = elapsedSeconds;
+      }
       if (completionMilestones.allConfidenceUpgradesAt == null && completionState.allConfidenceUpgrades) {
         completionMilestones.allConfidenceUpgradesAt = elapsedSeconds;
       }
@@ -1014,6 +1131,9 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       if (completionMilestones.allFlowUpgradesAt == null && completionState.allFlowUpgrades) {
         completionMilestones.allFlowUpgradesAt = elapsedSeconds;
       }
+      if (completionMilestones.allPaceUpgradesAt == null && completionState.allPaceUpgrades) {
+        completionMilestones.allPaceUpgradesAt = elapsedSeconds;
+      }
       if (completionMilestones.allBwBranchAt == null && completionState.allBwBranch) {
         completionMilestones.allBwBranchAt = elapsedSeconds;
       }
@@ -1022,6 +1142,9 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
       }
       if (completionMilestones.allYogaBranchAt == null && completionState.allYogaBranch) {
         completionMilestones.allYogaBranchAt = elapsedSeconds;
+      }
+      if (completionMilestones.allCardioBranchAt == null && completionState.allCardioBranch) {
+        completionMilestones.allCardioBranchAt = elapsedSeconds;
       }
       if (completionMilestones.allNonRepeatableAt == null && completionState.allNonRepeatable) {
         completionMilestones.allNonRepeatableAt = elapsedSeconds;
@@ -1035,9 +1158,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
         nextCounts.bodyweight !== lastPrestigeCounts.bodyweight ||
         nextCounts.lifting !== lastPrestigeCounts.lifting ||
         nextCounts.yoga !== lastPrestigeCounts.yoga ||
+        nextCounts.cardio !== lastPrestigeCounts.cardio ||
         nextCounts.confidenceShop !== lastPrestigeCounts.confidenceShop ||
         nextCounts.leadershipShop !== lastPrestigeCounts.leadershipShop ||
-        nextCounts.flowShop !== lastPrestigeCounts.flowShop
+        nextCounts.flowShop !== lastPrestigeCounts.flowShop ||
+        nextCounts.paceShop !== lastPrestigeCounts.paceShop
       ) {
         prestigePurchaseEvents.push({
           atSeconds: elapsedSeconds,
@@ -1047,9 +1172,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
             nextCounts.bodyweight +
             nextCounts.lifting +
             nextCounts.yoga +
+            nextCounts.cardio +
             nextCounts.confidenceShop +
             nextCounts.leadershipShop +
-            nextCounts.flowShop,
+            nextCounts.flowShop +
+            nextCounts.paceShop,
         });
         lastPrestigeCounts = nextCounts;
       }
@@ -1064,9 +1191,11 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
           lastPrestigeCounts.bodyweight +
           lastPrestigeCounts.lifting +
           lastPrestigeCounts.yoga +
+          lastPrestigeCounts.cardio +
           lastPrestigeCounts.confidenceShop +
           lastPrestigeCounts.leadershipShop +
-          lastPrestigeCounts.flowShop,
+          lastPrestigeCounts.flowShop +
+          lastPrestigeCounts.paceShop,
       });
 
       runCheckInBurst();
@@ -1127,17 +1256,20 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
           bodyweight: calculateBodyweightPrestigeGain(),
           lifting: calculateLiftingPrestigeGain(),
           yoga: checks.gymType === 2 ? prestige.yoga.total + 1 : 0,
+          cardio: checks.gymType === 3 ? prestige.cardio.total + 1 : 0,
         },
         metaAtPrestige: {
           confidence: prestige.bw.confidence,
           leadership: prestige.lifting.leadership,
           flow: prestige.yoga.flow,
+          pace: prestige.cardio.pace,
         },
         gymSnapshotAtPrestige: getGymSnapshotAtPrestige(currentRunGymType),
         branchRemainingCost: {
           bodyweight: getBranchRemainingCost(0),
           lifting: getBranchRemainingCost(1),
           yoga: getBranchRemainingCost(2),
+          cardio: getBranchRemainingCost(3),
         },
       });
 
@@ -1195,17 +1327,20 @@ async function runCompletionSimulationWindow(browser, port, resumeCheckpoint, st
           bodyweight: prestige.bw.total,
           lifting: prestige.lifting.total,
           yoga: prestige.yoga.total,
+          cardio: prestige.cardio.total,
         },
         prestigeCurrent: {
           global: prestige.current,
           bodyweight: prestige.bw.current,
           lifting: prestige.lifting.current,
           yoga: prestige.yoga.current,
+          cardio: prestige.cardio.current,
         },
         metaPoints: {
           confidence: prestige.bw.confidence,
           leadership: prestige.lifting.leadership,
           flow: prestige.yoga.flow,
+          pace: prestige.cardio.pace,
         },
       },
       assertionCount: Array.isArray(window.__gainzAssertLog) ? window.__gainzAssertLog.length : 0,
@@ -1367,9 +1502,9 @@ function derivePacingIssues(simulation) {
     issues.push("At least one Layer 1 run exceeded 6h; branch pacing drag remains.");
   }
 
-  const veryShortRuns = layer1Runs.filter((run) => run.durationSeconds < 90 * 60);
+  const veryShortRuns = layer1Runs.filter((run) => run.durationSeconds < 30 * 60);
   if (veryShortRuns.length > 0) {
-    issues.push("At least one Layer 1 run is under 90m; late-game pacing may collapse.");
+    issues.push("At least one Layer 1 run is under 30m; late-game pacing may collapse.");
   }
 
   const yogaRuns = simulation.runHistory.filter((run) => run.gymType === 2);
@@ -1385,6 +1520,22 @@ function derivePacingIssues(simulation) {
     });
     if (weakFlowRuns.length > 0) {
       issues.push("Some yoga runs did not reach at least 75% of the Flow run cap before prestige.");
+    }
+  }
+
+  const cardioRuns = simulation.runHistory.filter((run) => run.gymType === 3);
+  if (cardioRuns.length > 0) {
+    const weakPaceRuns = cardioRuns.filter((run) => {
+      const racesCompleted = Number(run.gymSnapshotAtPrestige?.racesCompleted || 0);
+      if (racesCompleted <= 0) {
+        return false;
+      }
+      const earned = Number(run.gymSnapshotAtPrestige?.paceRunEarned || 0);
+      const cap = Number(run.gymSnapshotAtPrestige?.paceRunCap || 1);
+      return earned + 1e-6 < cap * 0.75;
+    });
+    if (weakPaceRuns.length > 0) {
+      issues.push("Some cardio runs did not reach at least 75% of the Pace run cap before prestige.");
     }
   }
 
@@ -1415,6 +1566,14 @@ function deriveContentGaps(simulation) {
     gaps.push("Flow shop trails yoga branch completion by over 2h; yoga Flow cadence likely too slow.");
   }
 
+  if (
+    milestones.allCardioPrestigeUpgradesAt != null &&
+    milestones.allPaceUpgradesAt != null &&
+    milestones.allPaceUpgradesAt - milestones.allCardioPrestigeUpgradesAt > 2 * 60 * 60
+  ) {
+    gaps.push("Pace shop trails cardio branch completion by over 2h; cardio Pace cadence likely too slow.");
+  }
+
   if (gaps.length === 0) {
     gaps.push("No major shop exhaustion gaps detected under active policy.");
   }
@@ -1437,12 +1596,14 @@ function buildTimingSummary(simulation) {
       bodyweight: (simulation.runHistory.find((run) => run.gymType === 0) || {}).durationSeconds ?? null,
       lifting: (simulation.runHistory.find((run) => run.gymType === 1) || {}).durationSeconds ?? null,
       yoga: (simulation.runHistory.find((run) => run.gymType === 2) || {}).durationSeconds ?? null,
+      cardio: (simulation.runHistory.find((run) => run.gymType === 3) || {}).durationSeconds ?? null,
     },
     completionMilestones: {
       global: simulation.completionMilestones.allGlobalPrestigeUpgradesAt,
       bodyweightBranch: simulation.completionMilestones.allBwBranchAt,
       liftingBranch: simulation.completionMilestones.allLiftingBranchAt,
       yogaBranch: simulation.completionMilestones.allYogaBranchAt,
+      cardioBranch: simulation.completionMilestones.allCardioBranchAt,
       allNonRepeatable: simulation.completionMilestones.allNonRepeatableAt,
     },
   };
@@ -1459,9 +1620,11 @@ function summarizeForConsole(runResult, pacingIssues, contentGaps) {
     bodyweightPrestiges: sim.finalState.prestigeTotals.bodyweight,
     liftingPrestiges: sim.finalState.prestigeTotals.lifting,
     yogaPrestiges: sim.finalState.prestigeTotals.yoga,
+    cardioPrestiges: sim.finalState.prestigeTotals.cardio,
     confidence: Number(sim.finalState.metaPoints.confidence.toFixed(2)),
     leadership: Number(sim.finalState.metaPoints.leadership.toFixed(2)),
     flow: Number(sim.finalState.metaPoints.flow.toFixed(2)),
+    pace: Number(sim.finalState.metaPoints.pace.toFixed(2)),
     assertionCount: sim.assertionCount,
     runtimeErrors: runResult.runtimeErrors.length,
     pacingIssues: pacingIssues.length,
@@ -1548,6 +1711,7 @@ async function main() {
       bwFirst: formatDuration(timingSummary.firstGymRunByType.bodyweight),
       liftingFirst: formatDuration(timingSummary.firstGymRunByType.lifting),
       yogaFirst: formatDuration(timingSummary.firstGymRunByType.yoga),
+      cardioFirst: formatDuration(timingSummary.firstGymRunByType.cardio),
       allNonRepeatable: formatDuration(timingSummary.completionMilestones.allNonRepeatable),
     },
   ]);

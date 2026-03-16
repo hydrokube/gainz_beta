@@ -3806,10 +3806,13 @@ function getLayer1PacingMultiplier() {
         multiplier = math.add(multiplier, math.mul(globalMultiplierScale, math.mul(globalScaling, crossGymWeight)));
     }
 
-    // Keep late-run acceleration from collapsing to ultra-short loops too early.
+    // Keep very deep endgame loops from collapsing too hard before Layer 2.
     if (localCompletedRuns > 10) {
-        let lateRunPenalty = math.min(0.1, math.mul(math.sub(localCompletedRuns, 10), 0.0075));
-        multiplier = math.max(baseMultiplier, math.sub(multiplier, lateRunPenalty));
+        let lateSoftcapStart = math.add(baseMultiplier, 0.1);
+        multiplier = applySoftcap(multiplier, lateSoftcapStart, 0.8);
+        if (localCompletedRuns > 14) {
+            multiplier = applySoftcap(multiplier, math.add(lateSoftcapStart, 0.025), 0.72);
+        }
     }
 
     return math.min(math.add(multiplier, masteryBonus), math.add(profile.cap, masteryBonus));
@@ -7558,6 +7561,9 @@ function reapplyPrestige(upgradeArray, text, type) {
                 case 2:
                     globalYogaUpgradeClick($("#" + text + "Btn" + upgradeArray[i].id), true);
                     break;
+                case 3:
+                    globalCardioUpgradeClick($("#" + text + "Btn" + upgradeArray[i].id), true);
+                    break;
                 default:
             }
 
@@ -8811,6 +8817,18 @@ function globalUpgradeClick(button, prestigeCheck) {
             case 43:
                 $("#globalCardioUpgradesModalTrigger").removeClass("d-none");
                 $("#newGymCardio").removeClass("d-none");
+                break;
+            case 44:
+                gym.members.growth *= 1.5;
+                gym.employees.sales.boost *= 1.5;
+                break;
+            case 45:
+                gym.money.classMultiplier *= 1.5;
+                gym.createClasses.classAmount *= 1.5;
+                break;
+            case 46:
+                gym.advertising.campaignGrowth *= 1.5;
+                gym.advertising.adMulti *= 1.5;
                 break;
             default:
         }
