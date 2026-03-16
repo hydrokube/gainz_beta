@@ -983,21 +983,13 @@
                                             Point(s)</span></li>
                                 </ul>
                                 <div id="prestigeReady" class="d-none">
-                                    <h5>Type of Gym to Open</h5><br />
-                                    <div><button type='button' id="newGymBodyweight"
-                                            class='btn btn-info btn-block btn-lg' onclick='newGym(0);'>Open a Bodyweight
-                                            Fitness Gym</button></div><br />
-                                    <div><button type='button' id="newGymLifting"
-                                            class='btn btn-info btn-block btn-lg d-none' onclick='newGym(1);'>Open a
-                                            Lifting
-                                            Gym</button></div><br />
-                                    <div><button type='button' id="newGymYoga"
-                                            class='btn btn-info btn-block btn-lg' onclick='newGym(2);'>Open a Yoga
-                                            Gym</button></div><br />
-                                    <div><button type='button' id="newGymCardio"
-                                            class='btn btn-info btn-block btn-lg' onclick='newGym(3);'>Open a Cardio
-                                            Gym</button></div>
-                                            <br />
+                                    <h5>Ready to open another gym</h5>
+                                    <p class="text-muted mb-3">You can keep waiting if you want more branch currency before switching.</p>
+                                    <button type="button" id="openGymChooserButton" class="btn btn-info btn-lg btn-block"
+                                        data-toggle="modal" data-target="#gymChooserModal" onclick="updateGymChooserModal()">
+                                        Choose Gym
+                                    </button>
+                                    <br />
                                 </div>
                             </div>
                             <div class="col">
@@ -1105,6 +1097,71 @@
                                         </div>
 
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="gymChooserModal" class="modal fade" tabindex="-1" role="dialog"
+                        aria-labelledby="gymChooserModalTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="gymChooserModalTitle">Choose Your Next Gym</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="text-muted mb-3">Pick the next branch when you are ready. Each card shows whether its branch currency is still available this run or already capped.</p>
+                                    <div class="row" id="gymChooserGrid">
+                                        <div class="col-md-6 mb-3">
+                                            <button type="button" id="newGymBodyweight"
+                                                class="btn btn-block text-left gym-choice-card gym-choice-card--bodyweight"
+                                                onclick="newGym(0);">
+                                                <span class="gym-choice-card__title">Bodyweight Fitness Gym</span>
+                                                <span class="gym-choice-card__subtitle">Lean progression, gang fights, Confidence.</span>
+                                                <span class="gym-choice-card__meta" id="newGymBodyweightStatus"></span>
+                                                <span class="gym-choice-card__meta" id="newGymBodyweightCurrency"></span>
+                                                <span class="gym-choice-card__hint" id="newGymBodyweightHint"></span>
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <button type="button" id="newGymLifting"
+                                                class="btn btn-block text-left gym-choice-card gym-choice-card--lifting d-none"
+                                                onclick="newGym(1);">
+                                                <span class="gym-choice-card__title">Lifting Gym</span>
+                                                <span class="gym-choice-card__subtitle">Heavy training, academy, Leadership.</span>
+                                                <span class="gym-choice-card__meta" id="newGymLiftingStatus"></span>
+                                                <span class="gym-choice-card__meta" id="newGymLiftingCurrency"></span>
+                                                <span class="gym-choice-card__hint" id="newGymLiftingHint"></span>
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <button type="button" id="newGymYoga"
+                                                class="btn btn-block text-left gym-choice-card gym-choice-card--yoga d-none"
+                                                onclick="newGym(2);">
+                                                <span class="gym-choice-card__title">Yoga Gym</span>
+                                                <span class="gym-choice-card__subtitle">Route drafting, stability, Flow.</span>
+                                                <span class="gym-choice-card__meta" id="newGymYogaStatus"></span>
+                                                <span class="gym-choice-card__meta" id="newGymYogaCurrency"></span>
+                                                <span class="gym-choice-card__hint" id="newGymYogaHint"></span>
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <button type="button" id="newGymCardio"
+                                                class="btn btn-block text-left gym-choice-card gym-choice-card--cardio d-none"
+                                                onclick="newGym(3);">
+                                                <span class="gym-choice-card__title">Cardio Gym</span>
+                                                <span class="gym-choice-card__subtitle">Smooth pacing, race-day pressure, Pace.</span>
+                                                <span class="gym-choice-card__meta" id="newGymCardioStatus"></span>
+                                                <span class="gym-choice-card__meta" id="newGymCardioCurrency"></span>
+                                                <span class="gym-choice-card__hint" id="newGymCardioHint"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Decide Later</button>
                                 </div>
                             </div>
                         </div>
@@ -1479,6 +1536,27 @@
                 </div>
             </div>
         </div>
+        <div id="notificationInboxModal" class="modal fade" tabindex="-1" role="dialog"
+            aria-labelledby="notificationInboxModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="notificationInboxModalTitle">Event Log</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="notificationInboxList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" id="notificationInboxButton" class="btn btn-outline-primary btn-sm"
+            data-toggle="modal" data-target="#notificationInboxModal" onclick="openNotificationInbox()">
+            Event Log
+            <span id="notificationInboxUnread" class="badge badge-pill badge-danger d-none">0</span>
+        </button>
     </div>
     </div>
 

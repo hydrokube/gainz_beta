@@ -44,6 +44,10 @@ var stats = {
     totalYogaPrestige: 0,
     totalCardioPrestige: 0,
     repeatingUpgrades: {},
+    notificationLog: {
+        entries: [],
+        nextId: 1,
+    },
     runTracker: {
         runSeconds: 0,
         moneyEarned: 0,

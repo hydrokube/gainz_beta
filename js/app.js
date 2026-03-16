@@ -22,6 +22,7 @@ var fightGangTimerId;
 var refreshId;
 var energyUiRefreshId;
 var offlineAlertTimerId;
+var notificationTimeoutIds = {};
 
 var liftingBenchTimerId;
 var liftingRowTimerId;
@@ -118,6 +119,405 @@ var PASSIVE_CONFIDENCE_RATE_PER_SECOND = 0.00003;
 var PASSIVE_LEADERSHIP_RATE_PER_SECOND = 0.00003;
 var PASSIVE_FLOW_RATE_PER_SECOND = 0.00003;
 var PASSIVE_PACE_RATE_PER_SECOND = 0.00003;
+var NOTIFICATION_TIMEOUTS = {
+    info: 5000,
+    story: 8500,
+    critical: 12000,
+};
+
+function createDefaultNotificationLog() {
+    return {
+        entries: [],
+        nextId: 1,
+    };
+}
+
+function ensureNotificationLog() {
+    if (stats.notificationLog == null || typeof stats.notificationLog !== "object") {
+        stats.notificationLog = createDefaultNotificationLog();
+    }
+
+    if (!Array.isArray(stats.notificationLog.entries)) {
+        stats.notificationLog.entries = [];
+    }
+
+    if (!Number.isFinite(stats.notificationLog.nextId) || stats.notificationLog.nextId < 1) {
+        stats.notificationLog.nextId = 1;
+    }
+
+    for (let i = 0; i < stats.notificationLog.entries.length; i++) {
+        let entry = stats.notificationLog.entries[i];
+        if (entry == null || typeof entry !== "object") {
+            stats.notificationLog.entries[i] = null;
+            continue;
+        }
+
+        entry.id = Number.isFinite(entry.id) ? entry.id : i + 1;
+        entry.at = Number.isFinite(entry.at) ? entry.at : Date.now();
+        entry.severity = entry.severity || "info";
+        entry.category = entry.category || "system";
+        entry.title = entry.title || "";
+        entry.message = entry.message || "";
+        entry.unread = entry.unread === true;
+    }
+
+    stats.notificationLog.entries = stats.notificationLog.entries.filter(function (entry) {
+        return entry != null;
+    }).slice(0, 100);
+
+    if (stats.notificationLog.entries.length > 0) {
+        let maxId = stats.notificationLog.entries.reduce(function (best, entry) {
+            return Math.max(best, entry.id);
+        }, 0);
+        stats.notificationLog.nextId = Math.max(stats.notificationLog.nextId, maxId + 1);
+    }
+
+    return stats.notificationLog;
+}
+
+function getNotificationUnreadCount() {
+    let logState = ensureNotificationLog();
+    return logState.entries.filter(function (entry) {
+        return entry.unread;
+    }).length;
+}
+
+function formatNotificationEntryTime(timestamp) {
+    if (!Number.isFinite(timestamp)) {
+        return "";
+    }
+
+    try {
+        return new Date(timestamp).toLocaleString();
+    }
+    catch (ex) {
+        return "";
+    }
+}
+
+function formatNotificationCategory(category) {
+    switch (category) {
+        case "story":
+            return "Story";
+        case "offline":
+            return "Offline";
+        case "debug":
+            return "Debug";
+        case "system":
+        default:
+            return "System";
+    }
+}
+
+function escapeNotificationText(text) {
+    return $("<div>").text(text || "").html();
+}
+
+function renderNotificationInboxTrigger() {
+    let unreadCount = getNotificationUnreadCount();
+    let unreadBadge = $("#notificationInboxUnread");
+    unreadBadge.text(unreadCount);
+    unreadBadge.toggleClass("d-none", unreadCount <= 0);
+}
+
+function renderNotificationInboxList() {
+    let logState = ensureNotificationLog();
+    let root = $("#notificationInboxList");
+
+    if (logState.entries.length === 0) {
+        root.html("<div class='gainz-inbox-empty'>No events yet.</div>");
+        return;
+    }
+
+    let html = logState.entries.slice().reverse().map(function (entry) {
+        let badges =
+            "<span class='badge badge-light gainz-inbox-entry__label'>" + escapeNotificationText(formatNotificationCategory(entry.category)) + "</span>";
+        if (entry.unread) {
+            badges += "<span class='badge badge-primary'>Unread</span>";
+        }
+
+        return "" +
+            "<div class='gainz-inbox-entry" + (entry.unread ? " gainz-inbox-entry--unread" : "") + "'>" +
+            "<div class='gainz-inbox-entry__meta'>" +
+            "<div class='gainz-inbox-entry__badges'>" + badges + "</div>" +
+            "<div class='gainz-inbox-entry__time'>" + escapeNotificationText(formatNotificationEntryTime(entry.at)) + "</div>" +
+            "</div>" +
+            "<div class='gainz-inbox-entry__title'>" + escapeNotificationText(entry.title) + "</div>" +
+            "<div class='gainz-inbox-entry__message'>" + escapeNotificationText(entry.message) + "</div>" +
+            "</div>";
+    }).join("");
+
+    root.html(html);
+}
+
+function markNotificationInboxRead() {
+    let logState = ensureNotificationLog();
+    for (let i = 0; i < logState.entries.length; i++) {
+        logState.entries[i].unread = false;
+    }
+
+    renderNotificationInboxTrigger();
+    renderNotificationInboxList();
+}
+
+function openNotificationInbox() {
+    ensureNotificationLog();
+    markNotificationInboxRead();
+}
+
+function addNotificationLogEntry(options) {
+    if (!options || options.logEntry === false) {
+        return;
+    }
+
+    let logState = ensureNotificationLog();
+    let severity = options.severity || "info";
+    let category = options.category || (severity === "story" ? "story" : "system");
+    let unread = options.markUnread === true || ((options.markUnread !== false) && (severity === "story" || severity === "critical"));
+
+    logState.entries.push({
+        id: logState.nextId++,
+        at: Date.now(),
+        severity: severity,
+        category: category,
+        title: options.title || "",
+        message: options.message || "",
+        unread: unread,
+    });
+
+    if (logState.entries.length > 100) {
+        logState.entries = logState.entries.slice(logState.entries.length - 100);
+    }
+
+    renderNotificationInboxTrigger();
+    renderNotificationInboxList();
+}
+
+function getNotificationTimeout(severity, timeoutMs) {
+    if (Number.isFinite(timeoutMs) && timeoutMs >= 0) {
+        return timeoutMs;
+    }
+
+    return NOTIFICATION_TIMEOUTS[severity] || NOTIFICATION_TIMEOUTS.info;
+}
+
+function clearNotificationTimeout(id) {
+    if (!id || !notificationTimeoutIds[id]) {
+        return;
+    }
+
+    clearTimeout(notificationTimeoutIds[id]);
+    delete notificationTimeoutIds[id];
+}
+
+function removeNotificationCard(id) {
+    if (!id) {
+        return;
+    }
+
+    clearNotificationTimeout(id);
+    $("#" + id).remove();
+}
+
+function clearAllNotificationCards() {
+    Object.keys(notificationTimeoutIds).forEach(function (id) {
+        clearNotificationTimeout(id);
+    });
+    $("#story").html("");
+}
+
+function closeNotificationCard(id) {
+    if (!id) {
+        return;
+    }
+
+    clearNotificationTimeout(id);
+    let $card = $("#" + id);
+    if (!$card.length) {
+        return;
+    }
+
+    $card.addClass("is-closing");
+    setTimeout(function () {
+        $("#" + id).remove();
+    }, 180);
+}
+
+function showNotificationCard(options) {
+    if (!options || !options.id) {
+        return;
+    }
+
+    addNotificationLogEntry(options);
+
+    let severity = options.severity || "info";
+    let timeoutMs = getNotificationTimeout(severity, options.timeoutMs);
+    let dismissible = options.dismissible !== false;
+    let title = options.title || "";
+    let message = options.message || "";
+    let stackRoot = $("#story");
+
+    removeNotificationCard(options.id);
+
+    let dismissButton = "";
+    if (dismissible) {
+        dismissButton = "<button type='button' class='gainz-alert-card__dismiss' aria-label='Dismiss' onclick=\"closeNotificationCard('" + options.id + "')\">&times;</button>";
+    }
+
+    let html =
+        "<div id='" + options.id + "' class='gainz-alert-card gainz-alert-card--" + severity + "' role='alert' data-severity='" + severity + "'>" +
+        "<div class='gainz-alert-card__body'>" +
+        "<div class='gainz-alert-card__accent'></div>" +
+        "<div class='gainz-alert-card__content'>" +
+        "<strong class='gainz-alert-card__title'>" + title + "</strong>" +
+        "<div class='gainz-alert-card__message'>" + message + "</div>" +
+        "</div>" +
+        dismissButton +
+        "</div>" +
+        "</div>";
+
+    stackRoot.prepend(html);
+
+    if (timeoutMs > 0) {
+        notificationTimeoutIds[options.id] = setTimeout(function () {
+            closeNotificationCard(options.id);
+        }, timeoutMs);
+    }
+}
+
+function getGymChoiceState(type) {
+    let states = {
+        0: {
+            buttonId: "newGymBodyweight",
+            prestigeTotal: prestige.bw.total,
+            currencyName: "Confidence",
+            currencyValue: prestige.bw.confidence,
+            activeGymType: 0,
+        },
+        1: {
+            buttonId: "newGymLifting",
+            prestigeTotal: prestige.lifting.total,
+            currencyName: "Leadership",
+            currencyValue: prestige.lifting.leadership,
+            activeGymType: 1,
+        },
+        2: {
+            buttonId: "newGymYoga",
+            prestigeTotal: prestige.yoga.total,
+            currencyName: "Flow",
+            currencyValue: prestige.yoga.flow,
+            activeGymType: 2,
+        },
+        3: {
+            buttonId: "newGymCardio",
+            prestigeTotal: prestige.cardio.total,
+            currencyName: "Pace",
+            currencyValue: prestige.cardio.pace,
+            activeGymType: 3,
+        },
+    };
+
+    return states[type] || null;
+}
+
+function hasBodyweightCurrencyRemainingThisRun() {
+    if (bodyweight == null || bodyweight.gang == null || !Array.isArray(bodyweight.gang.rivals)) {
+        return false;
+    }
+
+    for (let i = 0; i < bodyweight.gang.rivals.length; i++) {
+        if (bodyweight.gang.rivals[i].isAbsorbed !== true) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function hasLiftingCurrencyRemainingThisRun() {
+    let academy = ensureLiftingAcademyState();
+    return academy.seasonsCompleted < getAcademySeasonCap();
+}
+
+function hasYogaCurrencyRemainingThisRun() {
+    let flowState = ensureYogaFlowState();
+    return math.evaluate(flowState.runEarned || 0) < math.evaluate(getYogaFlowRunCap());
+}
+
+function hasCardioCurrencyRemainingThisRun() {
+    let intervalState = ensureCardioIntervalState();
+    return math.evaluate(intervalState.runEarned || 0) < math.evaluate(getCardioPaceRunCap());
+}
+
+function getGymChoiceCurrencyAvailability(type) {
+    switch (type) {
+        case 0:
+            return {
+                hasRemaining: hasBodyweightCurrencyRemainingThisRun(),
+                availableHint: "More Confidence available this run. Absorb the remaining gangs before switching.",
+                cappedHint: "Confidence is capped for this run. Safe to switch whenever you want.",
+            };
+        case 1:
+            return {
+                hasRemaining: hasLiftingCurrencyRemainingThisRun(),
+                availableHint: "More Leadership available this run. Finish more academy seasons before switching.",
+                cappedHint: "Leadership is capped for this run. Safe to switch whenever you want.",
+            };
+        case 2:
+            return {
+                hasRemaining: hasYogaCurrencyRemainingThisRun(),
+                availableHint: "More Flow available this run. Finish more route cycles before switching.",
+                cappedHint: "Flow is capped for this run. Safe to switch whenever you want.",
+            };
+        case 3:
+            return {
+                hasRemaining: hasCardioCurrencyRemainingThisRun(),
+                availableHint: "More Pace available this run. Finish more races before switching.",
+                cappedHint: "Pace is capped for this run. Safe to switch whenever you want.",
+            };
+        default:
+            return {
+                hasRemaining: false,
+                availableHint: "",
+                cappedHint: "",
+            };
+    }
+}
+
+function updateGymChoiceCard(type) {
+    let choiceState = getGymChoiceState(type);
+    if (choiceState == null) {
+        return;
+    }
+
+    let button = $("#" + choiceState.buttonId);
+    if (!button.length) {
+        return;
+    }
+
+    let statusText = "Prestige Total: " + formatPrestigePoints(choiceState.prestigeTotal);
+    let currencyText = choiceState.currencyName + ": " + formatMetaPoints(choiceState.currencyValue);
+    let hintText = "New branch available.";
+
+    if (checks.gymType === choiceState.activeGymType && checks.isPrestige) {
+        let availability = getGymChoiceCurrencyAvailability(type);
+        hintText = availability.hasRemaining ? availability.availableHint : availability.cappedHint;
+    }
+    else if (math.evaluate(choiceState.prestigeTotal) > 0) {
+        hintText = "Previously completed branch.";
+    }
+
+    $("#" + choiceState.buttonId + "Status").html(statusText);
+    $("#" + choiceState.buttonId + "Currency").html(currencyText);
+    $("#" + choiceState.buttonId + "Hint").html(hintText);
+}
+
+function updateGymChooserModal() {
+    updateGymChoiceCard(0);
+    updateGymChoiceCard(1);
+    updateGymChoiceCard(2);
+    updateGymChoiceCard(3);
+}
 var PACE_MAX_ENERGY_TO_SPEED_RATIO = 0.75;
 var PACE_RECOVERY_TO_SPEED_RATIO = 1;
 var PACE_EFFECTIVE_SOFTCAP_START = 18;
@@ -630,21 +1030,44 @@ function importSave() {
     try {
 
         if (confirm("Are you sure you want to import this save?")) {
-            let base64Save = $("#exportImportArea").val();
+            let base64Save = String($("#exportImportArea").val() || "").replace(/\s+/g, "");
+            if (base64Save.length === 0) {
+                showNotificationCard({
+                    id: "importSaveError",
+                    severity: "critical",
+                    title: "Couldn't import save.",
+                    message: "The save code is empty or invalid.",
+                    timeoutMs: 0,
+                });
+                return;
+            }
             let decryptedSave = atob(base64Save);
-            if (decryptedSave.includes("gameVersion")) {
-                localStorage.setItem(saveName, decryptedSave);
-
+            let parsedSave = JSON.parse(decryptedSave);
+            let migration = migrateSaveData(parsedSave);
+            if (migration.payload != null && migration.saveObject != null) {
+                localStorage.setItem(saveName, JSON.stringify(migration.saveObject));
                 load($("#loadBtn"), false, false);
             }
             else {
-                $("#resetWrapper").html("<div id='resetAlert' class='alert alert-danger alert-dismissible fade show' role='alert'><strong>Not a valid save.</strong><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>")
+                showNotificationCard({
+                    id: "importSaveError",
+                    severity: "critical",
+                    title: "Couldn't import save.",
+                    message: "The save code is not valid for this game version.",
+                    timeoutMs: 0,
+                });
             }
         }
     }
     catch (ex) {
         console.log(ex);
-        $("#resetWrapper").html("<div id='resetAlert' class='alert alert-danger alert-dismissible fade show' role='alert'><strong>Couldn't import your save.</strong><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>")
+        showNotificationCard({
+            id: "importSaveError",
+            severity: "critical",
+            title: "Couldn't import save.",
+            message: "The save code appears corrupted or incomplete.",
+            timeoutMs: 0,
+        });
     }
 }
 
@@ -844,7 +1267,7 @@ function loadReset() {
     $("#resUpgrades").html("");
     $("#coffee").addClass("d-none");
     $("#payDay").addClass("d-none");
-    $("#story").html("");
+    clearAllNotificationCards();
     $("#upgrades").html("");
     $("#jobUpgrades").html("");
     $("#resUpgrades").html("");
@@ -1070,13 +1493,20 @@ function load(button, prestigeCheck, firstLoad) {
         catch (ex) {
             console.log(ex);
             firstLoad = false;
-            $("#story").prepend("<div id='error' class='alert alert-danger alert-dismissible fade show fixed-bottom' role='alert'><strong>Something went wrong loading your save!</strong> This is likely a bug - come on the discord chat and ask me for help. Resetting game progress will likely fix the issue if you don't mind losing progress.<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+            showNotificationCard({
+                id: "error",
+                severity: "critical",
+                title: "Something went wrong loading your save!",
+                message: "This is likely a bug - come on the discord chat and ask me for help. Resetting game progress will likely fix the issue if you don't mind losing progress.",
+                timeoutMs: 0,
+            });
             // input error message warning user that saving is off
         }
 
         if (stats.repeatingUpgrades == null || typeof stats.repeatingUpgrades !== "object") {
             stats.repeatingUpgrades = {};
         }
+        ensureNotificationLog();
         ensureRunTracker();
         ensureLayer2PrestigeState();
         ensureLiftingAcademyState();
@@ -1084,9 +1514,18 @@ function load(button, prestigeCheck, firstLoad) {
         ensureCardioIntervalState();
 
         if (recoveredCorruptSave) {
-            $("#story").prepend("<div id='saveRecoveryAlert' class='alert alert-warning alert-dismissible fade show fixed-bottom' role='alert'><strong>Recovered from a corrupted save.</strong> Your previous save was backed up and reset to keep the game stable.<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+            showNotificationCard({
+                id: "saveRecoveryAlert",
+                severity: "critical",
+                title: "Recovered from a corrupted save.",
+                message: "Your previous save was backed up and reset to keep the game stable.",
+                timeoutMs: 0,
+            });
         }
     }
+
+    renderNotificationInboxTrigger();
+    renderNotificationInboxList();
 
     $('[data-toggle="tooltip"]').tooltip();
 
@@ -1163,7 +1602,12 @@ function load(button, prestigeCheck, firstLoad) {
 
     if (checks.gymType == -1) {
         if (!checks.story1) {
-            $("#story").prepend("<div id='story1' class='alert alert-primary alert-dismissible fade show fixed-bottom' role='alert'><strong>Wow I'm out of shape!</strong> I'll do some pushups to get stronger.<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+            showNotificationCard({
+                id: "story1",
+                severity: "story",
+                title: "Wow I'm out of shape!",
+                message: "I'll do some pushups to get stronger.",
+            });
         }
         if (checks.story2) {
             $("#work-tab").removeClass("d-none");
@@ -1662,15 +2106,14 @@ function showOfflineSummary(
         detailText += " | Pace +" + formatSummaryNumber(paceGain);
     }
 
-    $("#offlineProgressAlert").remove();
-    $("#story").prepend("<div id='offlineProgressAlert' class='alert alert-info alert-dismissible fade show fixed-bottom' role='alert'><strong>Offline progress applied (" + durationText + ").</strong> " + detailText + "<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
-
-    if (offlineAlertTimerId != null) {
-        clearTimeout(offlineAlertTimerId);
-    }
-    offlineAlertTimerId = setTimeout(function () {
-        $("#offlineProgressAlert").alert("close");
-    }, 9000);
+    showNotificationCard({
+        id: "offlineProgressAlert",
+        severity: "info",
+        category: "offline",
+        title: "Offline progress applied (" + durationText + ").",
+        message: detailText,
+        timeoutMs: 9000,
+    });
 }
 
 function sanitizeDebugSpeedMultiplier(multiplier) {
@@ -2048,7 +2491,13 @@ function debugSkipProgression() {
 
     updatePrestigeValues();
     assertValidState("debug_skip_progression", { strict: true });
-    $("#story").prepend("<div id='debugSkipAlert' class='alert alert-warning alert-dismissible fade show fixed-bottom' role='alert'><strong>Debug progression skip applied.</strong> Resources and progression flags were advanced.<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+    showNotificationCard({
+        id: "debugSkipAlert",
+        severity: "critical",
+        category: "debug",
+        title: "Debug progression skip applied.",
+        message: "Resources and progression flags were advanced.",
+    });
 }
 
 function markUpgradesActive(upgradeArray) {
@@ -2127,7 +2576,13 @@ function debugForceUnlocks() {
     updatePrestigeValues();
     restartRuntimeIntervalsForDebugSpeed();
     assertValidState("debug_force_unlocks", { strict: true });
-    $("#story").prepend("<div id='debugForceUnlockAlert' class='alert alert-info alert-dismissible fade show fixed-bottom' role='alert'><strong>Debug force unlocks applied.</strong> Upgrade visibility and progression gates are now unlocked.<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+    showNotificationCard({
+        id: "debugForceUnlockAlert",
+        severity: "info",
+        category: "debug",
+        title: "Debug force unlocks applied.",
+        message: "Upgrade visibility and progression gates are now unlocked.",
+    });
 }
 
 function applyPrestigeJump(target, jumpRuns) {
@@ -2145,30 +2600,19 @@ function debugPrestigeJump() {
     let jumpRuns = 5;
     checks.isPrestige = true;
     applyPrestigeJump(prestige, jumpRuns);
-
-    switch (checks.gymType) {
-        case -1:
-        case 0:
-            applyPrestigeJump(prestige.bw, jumpRuns);
-            break;
-        case 1:
-            applyPrestigeJump(prestige.lifting, jumpRuns);
-            break;
-        case 2:
-            applyPrestigeJump(prestige.yoga, jumpRuns);
-            break;
-        case 3:
-            applyPrestigeJump(prestige.cardio, jumpRuns);
-            break;
-        default:
-    }
+    applyPrestigeJump(prestige.bw, jumpRuns);
+    applyPrestigeJump(prestige.lifting, jumpRuns);
+    applyPrestigeJump(prestige.yoga, jumpRuns);
+    applyPrestigeJump(prestige.cardio, jumpRuns);
 
     updatePrestigeValues();
     checkPrestigeUpgradeDisable(prestige.upgrades, prestige.current, "globalUpgrade");
     checkPrestigeUpgradeDisable(prestige.bw.upgrades, prestige.bw.current, "globalBwUpgrade");
     checkPrestigeUpgradeDisable(prestige.lifting.upgrades, prestige.lifting.current, "globalLiftingUpgrade");
     checkPrestigeUpgradeDisable(prestige.yoga.upgrades, prestige.yoga.current, "globalYogaUpgrade");
+    checkPrestigeUpgradeDisable(prestige.cardio.upgrades, prestige.cardio.current, "globalCardioUpgrade");
     checkPrestigeUpgradeDisable(prestige.yoga.flowUpgrades, prestige.yoga.flow, "flowUpgrade");
+    checkPrestigeUpgradeDisable(prestige.cardio.paceUpgrades, prestige.cardio.pace, "paceUpgrade");
     checkPrestigeUpgradeDisable(prestige.bw.confidenceUpgrades, prestige.bw.confidence, "confidenceUpgrade");
     checkPrestigeUpgradeDisable(prestige.lifting.leadershipUpgrades, prestige.lifting.leadership, "leadershipUpgrade");
     updateRepeatingUpgradeButtons("globalUpgrades", "global", prestige.current);
@@ -2181,7 +2625,13 @@ function debugPrestigeJump() {
     updateRepeatingUpgradeButtons("confidenceShopUpgrades", "confidence", prestige.bw.confidence);
     updateRepeatingUpgradeButtons("leadershipShopUpgrades", "leadership", prestige.lifting.leadership);
     assertValidState("debug_prestige_jump", { strict: true });
-    $("#story").prepend("<div id='debugPrestigeJumpAlert' class='alert alert-info alert-dismissible fade show fixed-bottom' role='alert'><strong>Debug prestige jump applied.</strong> Added 5 prestige cycles worth of points for the current layer.<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+    showNotificationCard({
+        id: "debugPrestigeJumpAlert",
+        severity: "info",
+        category: "debug",
+        title: "Debug prestige jump applied.",
+        message: "Added 5 prestige cycles worth of points for the current layer.",
+    });
 }
 
 function setupDebugPanel() {
@@ -2879,7 +3329,7 @@ function getPaceShopIntervalMultiplier() {
 }
 
 function getPaceShopRewardMultiplier() {
-    return hasPaceShopUpgrade(4) ? 1.5 : 1;
+    return hasPaceShopUpgrade(4) ? 1.24 : 1;
 }
 
 function getConfidencePerGangAbsorb() {
@@ -4649,7 +5099,12 @@ function setupRefresh() {
             $("#codeBotsProgress").css("width", ((research.codeBots.current / research.codeBots.max) * 100) + "%");
 
             if (job.views > 5000 && !checks.story3) {
-                $("#story").prepend("<div id='story3' class='alert alert-primary alert-dismissible fade show fixed-bottom' role='alert'><strong>It might take a while to become popular</strong>. Let's see if there's anything I can buy in the meantime to get harder better faster stronger. (check workout tab)<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+                showNotificationCard({
+                    id: "story3",
+                    severity: "story",
+                    title: "It might take a while to become popular.",
+                    message: "Let's see if there's anything I can buy in the meantime to get harder better faster stronger. (check workout tab)",
+                });
                 checks.story3 = true;
             }
 
@@ -6101,7 +6556,7 @@ function getCardioRaceProgressPerSecond() {
 
     let base = math.add(0.0072, math.mul(math.log10(math.add(getCardioTotalReps(), 1)), 0.0014));
     if (hasPurchasedPrestigeUpgrade(prestige.cardio.upgrades, 17)) {
-        base = math.mul(base, 1.35);
+        base = math.mul(base, 1.2);
     }
     return applyModifierPipeline(base, {
         multiplicative: [getPaceShopIntervalMultiplier()],
@@ -6117,7 +6572,7 @@ function getCardioRaceBaseSpeed() {
     if (hasPurchasedPrestigeUpgrade(prestige.cardio.upgrades, 17)) {
         baseSpeed = math.add(baseSpeed, 0.08);
     }
-    return math.max(0.7, math.min(1.6, baseSpeed));
+    return math.max(0.7, math.min(1.5, baseSpeed));
 }
 
 function getCardioRaceLeaderProgress(intervalState) {
@@ -6606,6 +7061,7 @@ function updatePrestigeValues() {
 
     if (checks.isPrestige) {
         $("#prestigeReady").removeClass("d-none");
+        updateGymChooserModal();
     }
     else {
         $("#prestigeReady").addClass("d-none");
@@ -7463,84 +7919,88 @@ function setupCardioRecoveryTimer() {
 
 function newGym(type) {
     if (checks.isPrestige) {
-        if (confirm("Are you sure you want to select this type of gym?")) {
-            checks.isPrestige = false;
-            // points
-            let repeatingUpgradeState = JSON.parse(JSON.stringify(stats.repeatingUpgrades || {}));
+        checks.isPrestige = false;
+        // points
+        let repeatingUpgradeState = JSON.parse(JSON.stringify(stats.repeatingUpgrades || {}));
 
-            prestige.current = normalizePrestigePoints(math.add(prestige.current, math.add(prestige.total, 1)));
-            prestige.total = math.add(prestige.total, 1);
-            let gang = bodyweight.gang.name;
-            switch (checks.gymType) {
-                case -1:
-                    prestige.bw.current = normalizePrestigePoints(math.add(prestige.bw.current, math.add(prestige.bw.total, 1)));
-                    prestige.bw.total = math.add(prestige.bw.total, 1);
-                    break;
-                case 0:
-                    prestige.bw.current = normalizePrestigePoints(math.add(prestige.bw.current, math.add(prestige.bw.total, 1)));
-                    prestige.bw.total = math.add(prestige.bw.total, 1);
-                    break;
-                case 1:
-                    prestige.lifting.current = normalizePrestigePoints(math.add(prestige.lifting.current, math.add(prestige.lifting.total, 1)));
-                    prestige.lifting.total = math.add(prestige.lifting.total, 1);
-                    break;
-                case 2:
-                    prestige.yoga.current = normalizePrestigePoints(math.add(prestige.yoga.current, math.add(prestige.yoga.total, 1)));
-                    prestige.yoga.total = math.add(prestige.yoga.total, 1);
-                    break;
-                case 3:
-                    prestige.cardio.current = normalizePrestigePoints(math.add(prestige.cardio.current, math.add(prestige.cardio.total, 1)));
-                    prestige.cardio.total = math.add(prestige.cardio.total, 1);
-                    break;
-                default:
-            }
-
-            // set gym type
-            checks.gymType = type;
-            // reset game
-            stats = JSON.parse(JSON.stringify(baseStats));
-            bodyweight = JSON.parse(JSON.stringify(baseBodyweight));
-            upgrades = JSON.parse(JSON.stringify(baseUpgrades));
-            job = JSON.parse(JSON.stringify(baseJob));
-            research = JSON.parse(JSON.stringify(baseResearch));
-            gym = JSON.parse(JSON.stringify(baseGym));
-            lifting = JSON.parse(JSON.stringify(baseLifting));
-            yoga = JSON.parse(JSON.stringify(baseYoga));
-            cardio = JSON.parse(JSON.stringify(baseCardio));
-            stats.repeatingUpgrades = repeatingUpgradeState;
-
-            bodyweight.gang.name = gang;
-            $("#gym-tab").removeClass("d-none");
-            checks.story6 = true;
-
-            loadReset();
-            load(null, true, false);
-
-            // apply existing prestige upgrades
-            reapplyPrestige(prestige.upgrades, "globalUpgrade", -1);
-            switch (checks.gymType) {
-                case 0:
-                    reapplyPrestige(prestige.bw.upgrades, "globalBwUpgrade", 0);
-                    break;
-                case 1:
-                    reapplyPrestige(prestige.lifting.upgrades, "globalLiftingUpgrade", 1);
-                    break;
-                case 2:
-                    reapplyPrestige(prestige.yoga.upgrades, "globalYogaUpgrade", 2);
-                    break;
-                case 3:
-                    reapplyPrestige(prestige.cardio.upgrades, "globalCardioUpgrade", 3);
-                    break;
-                default:
-            }
-
-            gym.members.focusId = 0;
-            focusMemberTier(0);
-
-            $("#story").prepend("<div id='story6' class='alert alert-primary alert-dismissible fade show fixed-bottom' role='alert'><strong>My new gym is open!</strong> I can now train my replacement before opening another franchise location.<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
-            updatePrestigeValues();
-            updateAutobuyerToggles();
+        prestige.current = normalizePrestigePoints(math.add(prestige.current, math.add(prestige.total, 1)));
+        prestige.total = math.add(prestige.total, 1);
+        let gang = bodyweight.gang.name;
+        switch (checks.gymType) {
+            case -1:
+                prestige.bw.current = normalizePrestigePoints(math.add(prestige.bw.current, math.add(prestige.bw.total, 1)));
+                prestige.bw.total = math.add(prestige.bw.total, 1);
+                break;
+            case 0:
+                prestige.bw.current = normalizePrestigePoints(math.add(prestige.bw.current, math.add(prestige.bw.total, 1)));
+                prestige.bw.total = math.add(prestige.bw.total, 1);
+                break;
+            case 1:
+                prestige.lifting.current = normalizePrestigePoints(math.add(prestige.lifting.current, math.add(prestige.lifting.total, 1)));
+                prestige.lifting.total = math.add(prestige.lifting.total, 1);
+                break;
+            case 2:
+                prestige.yoga.current = normalizePrestigePoints(math.add(prestige.yoga.current, math.add(prestige.yoga.total, 1)));
+                prestige.yoga.total = math.add(prestige.yoga.total, 1);
+                break;
+            case 3:
+                prestige.cardio.current = normalizePrestigePoints(math.add(prestige.cardio.current, math.add(prestige.cardio.total, 1)));
+                prestige.cardio.total = math.add(prestige.cardio.total, 1);
+                break;
+            default:
         }
+
+        // set gym type
+        checks.gymType = type;
+        // reset game
+        stats = JSON.parse(JSON.stringify(baseStats));
+        bodyweight = JSON.parse(JSON.stringify(baseBodyweight));
+        upgrades = JSON.parse(JSON.stringify(baseUpgrades));
+        job = JSON.parse(JSON.stringify(baseJob));
+        research = JSON.parse(JSON.stringify(baseResearch));
+        gym = JSON.parse(JSON.stringify(baseGym));
+        lifting = JSON.parse(JSON.stringify(baseLifting));
+        yoga = JSON.parse(JSON.stringify(baseYoga));
+        cardio = JSON.parse(JSON.stringify(baseCardio));
+        stats.repeatingUpgrades = repeatingUpgradeState;
+
+        bodyweight.gang.name = gang;
+        $("#gym-tab").removeClass("d-none");
+        checks.story6 = true;
+
+        loadReset();
+        load(null, true, false);
+
+        // apply existing prestige upgrades
+        reapplyPrestige(prestige.upgrades, "globalUpgrade", -1);
+        switch (checks.gymType) {
+            case 0:
+                reapplyPrestige(prestige.bw.upgrades, "globalBwUpgrade", 0);
+                break;
+            case 1:
+                reapplyPrestige(prestige.lifting.upgrades, "globalLiftingUpgrade", 1);
+                break;
+            case 2:
+                reapplyPrestige(prestige.yoga.upgrades, "globalYogaUpgrade", 2);
+                break;
+            case 3:
+                reapplyPrestige(prestige.cardio.upgrades, "globalCardioUpgrade", 3);
+                break;
+            default:
+        }
+
+        gym.members.focusId = 0;
+        focusMemberTier(0);
+        $("#gymChooserModal").modal("hide");
+
+        showNotificationCard({
+            id: "story6",
+            severity: "story",
+            title: "My new gym is open!",
+            message: "I can now train my replacement before opening another franchise location.",
+        });
+        updatePrestigeValues();
+        updateAutobuyerToggles();
     }
 }
 
@@ -9529,7 +9989,12 @@ function postFormula() {
 
 function setupStory2() {
     checks.story2 = true;
-    $("#story").prepend("<div id='story2' class='alert alert-primary alert-dismissible fade show fixed-bottom' role='alert'><strong>I need a break!</strong> I'm actually so strong now, I should start a YouTube channel! (check work tab)<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+    showNotificationCard({
+        id: "story2",
+        severity: "story",
+        title: "I need a break!",
+        message: "I'm actually so strong now, I should start a YouTube channel! (check work tab)",
+    });
     $("#work-tab").removeClass("d-none");
     $("#followerWrap").removeClass("d-none");
     setupMakeVideoTimer();
@@ -9707,7 +10172,12 @@ function jobUpgradeClick(button) {
                     setupBrowseRedditTimer();
                     $("#research-tab").removeClass("d-none");
                     $("#researchText").removeClass("d-none");
-                    $("#story").prepend("<div id='story4' class='alert alert-primary alert-dismissible fade show fixed-bottom' role='alert'><strong>Why do my followers keep leaving?</strong> I'll browse Reddit for some insights and fitness information. (check research tab)<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+                    showNotificationCard({
+                        id: "story4",
+                        severity: "story",
+                        title: "Why do my followers keep leaving?",
+                        message: "I'll browse Reddit for some insights and fitness information. (check research tab)",
+                    });
                     checks.story4 = true;
                     break;
                 case 5:
@@ -9864,7 +10334,12 @@ function resUpgradeClick(button) {
                     break;
                 case 17:
                     $("#openGym-tab").removeClass("d-none");
-                    $("#story").prepend("<div id='story5' class='alert alert-primary alert-dismissible fade show fixed-bottom' role='alert'><strong>I'm so rich and strong now</strong>! It's time to fulfill my dream and open a gym. (check Open Gym tab)<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>");
+                    showNotificationCard({
+                        id: "story5",
+                        severity: "story",
+                        title: "I'm so rich and strong now!",
+                        message: "It's time to fulfill my dream and open a gym. (check Open Gym tab)",
+                    });
                     checks.isPrestige = true;
                     checks.story5 = true;
                     updatePrestigeValues();

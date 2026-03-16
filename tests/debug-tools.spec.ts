@@ -159,6 +159,12 @@ test("debug prestige jump adds deterministic prestige cycles", async ({ page }) 
       globalTotal: prestige.total,
       bwCurrent: prestige.bw.current,
       bwTotal: prestige.bw.total,
+      liftingCurrent: prestige.lifting.current,
+      liftingTotal: prestige.lifting.total,
+      yogaCurrent: prestige.yoga.current,
+      yogaTotal: prestige.yoga.total,
+      cardioCurrent: prestige.cardio.current,
+      cardioTotal: prestige.cardio.total,
     };
   });
 
@@ -170,6 +176,12 @@ test("debug prestige jump adds deterministic prestige cycles", async ({ page }) 
       globalTotal: prestige.total,
       bwCurrent: prestige.bw.current,
       bwTotal: prestige.bw.total,
+      liftingCurrent: prestige.lifting.current,
+      liftingTotal: prestige.lifting.total,
+      yogaCurrent: prestige.yoga.current,
+      yogaTotal: prestige.yoga.total,
+      cardioCurrent: prestige.cardio.current,
+      cardioTotal: prestige.cardio.total,
       isPrestige: checks.isPrestige,
     };
   });
@@ -178,6 +190,12 @@ test("debug prestige jump adds deterministic prestige cycles", async ({ page }) 
   expect(after.globalCurrent - before.globalCurrent).toBe(15);
   expect(after.bwTotal - before.bwTotal).toBe(5);
   expect(after.bwCurrent - before.bwCurrent).toBe(15);
+  expect(after.liftingTotal - before.liftingTotal).toBe(5);
+  expect(after.liftingCurrent - before.liftingCurrent).toBe(15);
+  expect(after.yogaTotal - before.yogaTotal).toBe(5);
+  expect(after.yogaCurrent - before.yogaCurrent).toBe(15);
+  expect(after.cardioTotal - before.cardioTotal).toBe(5);
+  expect(after.cardioCurrent - before.cardioCurrent).toBe(15);
   expect(after.isPrestige).toBe(true);
   await expect(page.locator("#debugPrestigeJumpAlert")).toBeVisible();
 });

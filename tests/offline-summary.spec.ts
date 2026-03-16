@@ -40,12 +40,18 @@ test("offline progress summary alert is shown after applying offline gains", asy
     return {
       alertVisible: $("#offlineProgressAlert").length > 0,
       alertText: alertText,
+      alertClass: $("#offlineProgressAlert").attr("class") || "",
+      hasOfflineLogEntry: (stats.notificationLog?.entries || []).some((entry) =>
+        entry && entry.category === "offline" && String(entry.title || "").includes("Offline progress applied")
+      ),
     };
   });
 
   expect(summaryInfo.alertVisible).toBe(true);
   expect(summaryInfo.alertText).toContain("Offline progress applied");
   expect(summaryInfo.alertText).toContain("Money +");
+  expect(summaryInfo.alertClass).toContain("gainz-alert-card--info");
+  expect(summaryInfo.hasOfflineLogEntry).toBe(true);
 
   expect(errors).toEqual([]);
 });

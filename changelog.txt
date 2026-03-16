@@ -8,6 +8,22 @@ v.54 - 3/14/2026
         - fine-tuned pacing, late-game global upgrades, offline progress, passive gain rates, and multiple UI / refresh bugs
         - extended the late global upgrade ladder so end-of-Layer-1 cardio runs still have meaningful global spend targets
         - added an extra late-run pacing softcap so only the deepest endgame loops compress while first and mid Layer 1 runs stay in their current windows
+        - replaced the old bottom-pinned story/offline/debug alerts with stacked timed notification cards and severity tiers
+        - fixed versioned export/import save-code loading and expanded debug prestige jump so yoga/cardio gain the same deterministic jump coverage as the other Layer 1 gyms
+        - moved offline progress summaries onto the informational alert palette so they no longer read like story beats
+        - normalized pasted save-code import input so exported saves still load even when copied with extra whitespace or trailing newlines
+        - made invalid imported save codes raise visible critical notifications instead of quietly leaving the current session unchanged
+        - added an Event Log inbox with unread state so timed alerts, story beats, and offline summaries remain reviewable after the cards disappear
+        - moved the Event Log launcher to a fixed bottom-right position so it no longer competes with the top-of-page alert/header area
+        - rethemed the Event Log launcher and modal to a darker style so they sit more naturally with the rest of the UI
+        - completed the offline-summary notification migration so offline progress is now explicitly stored in the Event Log as part of the new alerting flow
+        - simplified Event Log badges down to the main label and disabled awkward badge ligatures so labels like `Offline` render cleanly
+        - replaced the old gym-selection alert flow with a player-initiated `Choose Gym` modal that shows branch-specific currency status and lets you decide later
+        - corrected the active-branch gym chooser hint so it no longer incorrectly claims the branch currency will still increase if you wait
+        - gave each gym chooser card its own color treatment and tied active-branch premium hints to the real minigame/run-cap state so they only promise more currency when more is actually available
+        - corrected the chooser intro copy so it points players to the per-card currency-status messaging instead of implying more branch currency is always available by waiting
+        - added a dedicated `Race Day` three-scenario simulator/report for fresh unlock, mid progression, and end-of-content cardio pacing checks
+        - tightened late `Race Day` pacing by trimming the late Pace reward multiplier and the deepest cardio speed/progress boosts so fresh unlock remains similar while mid/end runs do not cap quite as fast
         - rebuilt the deterministic timing/simulation tooling to cover current Layer 1 content, resumable long sims, and cardio-inclusive completion reports
 
 v.53 1/13/2024

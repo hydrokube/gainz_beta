@@ -11,6 +11,7 @@
     "profile:content": "node scripts/content-completion-sim.cjs",
     "profile:lifting-scenarios": "node scripts/lifting-academy-scenarios.cjs",
     "profile:yoga-scenarios": "node scripts/yoga-flow-scenarios.cjs",
+    "profile:cardio-scenarios": "node scripts/cardio-race-day-scenarios.cjs",
     "profile:meta-softcap": "node scripts/meta-softcap-stress.cjs",
     "profile:golden": "node scripts/golden-checkpoints.cjs",
     "profile:golden:update": "node scripts/golden-checkpoints.cjs --update",
